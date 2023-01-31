@@ -16,6 +16,6 @@ namespace big
             current_carriage = g_pointers->m_get_next_carriage(current_carriage);
         }
 
-        return current_carriage; 
+        return current_carriage;
     }
 }

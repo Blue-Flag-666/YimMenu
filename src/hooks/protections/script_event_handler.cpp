@@ -69,13 +69,6 @@ namespace big
 				return true;
 			}
 			break;
-		case eRemoteEvent::CeoKick:
-			if (player->m_player_id != scr_globals::gpbd_fm_3.as<GPBD_FM_3*>()->Entries[self::id].BossGoon.Boss)
-			{
-				g.reactions.ceo_kick.process(plyr);
-				return true;
-			}
-			break;
 		case eRemoteEvent::CeoMoney:
 			if (g.protections.script_events.ceo_money && player->m_player_id != scr_globals::gpbd_fm_3.as<GPBD_FM_3*>()->Entries[self::id].BossGoon.Boss)
 			{
@@ -83,6 +76,13 @@ namespace big
 				return true;
 			}
 			break;
+		case eRemoteEvent::CeoKick:
+			if (player->m_player_id != scr_globals::gpbd_fm_3.as<GPBD_FM_3*>()->Entries[self::id].BossGoon.Boss)
+			{
+				g.reactions.ceo_kick.process(plyr);
+				return true;
+			}
+			break;	
 		case eRemoteEvent::ClearWantedLevel:
 			if (g.protections.script_events.clear_wanted_level && !is_player_driver_of_local_vehicle(player->m_player_id))
 			{
@@ -355,6 +355,15 @@ namespace big
 				return true;
 			}
 			break;
+		case eRemoteEvent::BadThing1:
+		case eRemoteEvent::BadThing2:
+			return true;
+			break;
+		case eRemoteEvent::StartScriptBegin:
+		{
+			g.reactions.start_script.process(plyr);
+			return true;
+		}
 		case eRemoteEvent::TriggerCEORaid:
 		{
 			if (auto script = gta_util::find_script_thread(RAGE_JOAAT("freemode")))
@@ -365,14 +374,6 @@ namespace big
 				}
 			}
 
-			return true;
-		}
-		case eRemoteEvent::BadThing1:
-		case eRemoteEvent::BadThing2:
-			return true;
-		case eRemoteEvent::StartScriptBegin:
-		{
-			g.reactions.start_script.process(plyr);
 			return true;
 		}
 		}

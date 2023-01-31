@@ -35,8 +35,8 @@ namespace big
 		{
 			g_player_service->iterate([](auto& plyr) { 
 				for (auto& weapon : g_gta_data_service->weapons())
-					WEAPON::GIVE_WEAPON_TO_PED(PLAYER::GET_PLAYER_PED_SCRIPT_INDEX(plyr.second->id()), weapon.second.m_hash, 9999, FALSE, FALSE);
-				script::get_current()->yield(500ms); 
+					WEAPON::GIVE_WEAPON_TO_PED(PLAYER::GET_PLAYER_PED_SCRIPT_INDEX(plyr.second->id()), weapon.second.m_hash, 2222, FALSE, FALSE);
+				script::get_current()->yield(1000ms); 
 			});
 		}
 	};

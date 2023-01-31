@@ -91,10 +91,6 @@ namespace big
 					ImGui::EndCombo();
 				}
 
-				if (ImGui::IsItemHovered())
-					ImGui::SetTooltip("Only works as host");
-
-
 				if (ImGui::BeginCombo("Chat Command Permissions", COMMAND_ACCESS_LEVELS[current_player.command_access_level.value_or(g.session.chat_command_default_access_level)]))
 				{
 					for (const auto& [type, name] : COMMAND_ACCESS_LEVELS)
@@ -123,10 +119,22 @@ namespace big
 					}
 				}
 
-				components::button("Kick", []
+				components::button("Remote Kick", []
 				{
 					session::kick_by_rockstar_id(current_player.rockstar_id);
 				});
+
+				components::button("Remote Crash", []
+					{
+						session::crash_by_rockstar_id(current_player.rockstar_id);
+					});
+
+				components::button("Remote Crash2", []
+					{
+						session::crash_by_rockstar_id2(current_player.rockstar_id);
+					});
+
+				
 
 				components::button("Join Session", []
 				{
@@ -134,7 +142,7 @@ namespace big
 				});
 
 				static char message[256];
-				components::input_text("Input Message", message, sizeof(message));
+				ImGui::InputText("Input Message", message, sizeof(message));
 				if (components::button("Send Message"))
 				{
 					g_thread_pool->push([selected]
@@ -180,7 +188,7 @@ namespace big
 		static char new_name[64];
 		static int64_t new_rockstar_id;
 
-		components::input_text("Name", new_name, sizeof(new_name));
+		ImGui::InputText("Name", new_name, sizeof(new_name));
 		ImGui::InputScalar("Rockstar ID", ImGuiDataType_S64, &new_rockstar_id);
 
 		if (ImGui::Button("Add"))

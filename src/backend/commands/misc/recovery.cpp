@@ -1,25 +1,34 @@
-#include "backend/command.hpp"
+#include "backend/player_command.hpp"
 #include "natives.hpp"
+#include "pointers.hpp"
+#include "core/scr_globals.hpp"
+#include "gta_util.hpp"
+#include "util/entity.hpp"
 
+#include <network/Network.hpp>
 namespace big
 {
-	class recovery : command
+	class money_drops : player_command
 	{
-		using command::command;
+		using player_command::player_command;
 
-		virtual CommandAccessLevel get_access_level() override
+		virtual CommandAccessLevel get_access_level()
 		{
-			return CommandAccessLevel::NONE;
+			return CommandAccessLevel::FRIENDLY;
 		}
 
-		virtual void execute(const std::vector<std::uint64_t>&, const std::shared_ptr<command_context> ctx)
+		virtual void execute(player_ptr player, const std::vector<std::uint64_t>& _args, const std::shared_ptr<command_context> ctx)
 		{
-			ctx->report_error("Money and recovery options are not supported in YimMenu to keep Rockstar/Take Two happy. You can try Kiddion's Modest Menu (free) instead, but make sure to only get it from UnknownCheats.me, the rest are scams and contain malware");
+			{
+				STREAMING::REQUEST_MODEL(2628187989);
+				if (STREAMING::HAS_MODEL_LOADED(2628187989)) {
+					Vector3 coords = ENTITY::GET_ENTITY_COORDS(PLAYER::GET_PLAYER_PED_SCRIPT_INDEX(player->id()), false);
+					OBJECT::CREATE_AMBIENT_PICKUP(0x65948212, coords.x, coords.y, coords.z + 1.5, 0, 0xFFFF, 2628187989, 0, 1);
+				}
+				script::get_current()->yield(1500ms);
+			}
 		}
 	};
 
-	recovery g_money("money", "", "", 0);
-	recovery g_cash("cash", "", "", 0);
-	recovery g_drop("drop", "", "", 0);
-	recovery g_stats("stats", "", "", 0);
+	money_drops g_money_drops("moneydrop", "Money Drop", "Drop player money", 0, false);
 }

@@ -1,5 +1,7 @@
 #include "views/view.hpp"
+#include "widgets/imgui_hotkey.hpp"
 #include "script_mgr.hpp"
+#include "services/hotkey/hotkey_service.hpp"
 
 namespace big
 {
@@ -31,7 +33,7 @@ namespace big
 
 		if (ImGui::Button("Manage scripts"))
 			ImGui::OpenPopup("Scripts");
-		
+
 		ImGui::SetNextWindowPos({ 780,228 }, ImGuiCond_FirstUseEver);
 		if (ImGui::BeginPopupModal("Scripts", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
 		{
@@ -39,6 +41,5 @@ namespace big
 
 			ImGui::EndPopup();
 		}
-		
 	}
 }

@@ -68,6 +68,43 @@ namespace big::vehicle
 		VEHICLE::SET_VEHICLE_IS_STOLEN(veh, FALSE);
 	}
 
+	inline int spawn(const char* model, Vector3 location, float heading, bool networked = true, uint32_t modelhash = 0)
+	{
+		Hash hash = modelhash ? modelhash : rage::joaat(model);
+
+		if (hash)
+		{
+			for (uint8_t i = 0; !STREAMING::HAS_MODEL_LOADED(hash) && i < 100; i++)
+			{
+				STREAMING::REQUEST_MODEL(hash);
+
+				script::get_current()->yield();
+			}
+			if (!STREAMING::HAS_MODEL_LOADED(hash))
+			{
+				g_notification_service->push_warning("Spawn", "Failed to spawn model, did you give an incorrect model?");
+
+				return -1;
+			}
+
+			Vehicle veh = VEHICLE::CREATE_VEHICLE(hash, location.x, location.y, location.z, heading, networked, false, false);
+
+			script::get_current()->yield();
+
+			STREAMING::SET_MODEL_AS_NO_LONGER_NEEDED(hash);
+
+			if (*g_pointers->m_is_session_started)
+			{
+				set_mp_bitset(veh);
+				LOG(INFO) << "Created " << model << " at " << "X:" << location.x << " Y:" << location.y << " Z:" << location.z;
+			}
+
+			return veh;
+		}
+
+		return -1;
+	}
+
 	inline void bring(Vehicle veh, Vector3 location, bool put_in = true, int seatIdx = -1)
 	{
 		if (!ENTITY::IS_ENTITY_A_VEHICLE(veh)) return g_notification_service->push_error("Vehicle", "Invalid handle");

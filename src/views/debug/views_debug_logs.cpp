@@ -9,8 +9,18 @@ namespace big
 		if (ImGui::BeginTabItem("Logs"))
 		{
 			ImGui::Checkbox("Log Metrics", &g.debug.logs.metric_logs);
+
 			ImGui::Checkbox("Log Packets", &g.debug.logs.packet_logs);
+
 			ImGui::Checkbox("Native Script Hooks", &g.debug.logs.script_hook_logs);
+
+			ImGui::Checkbox("Block and Log Sync's", &g.debug.logs.block_and_log_syncs);
+
+			components::button("Test exception handler", [] {
+				{
+					*((PINT)nullptr) = 0xDEADBEEF;
+				}
+			});
 
 			if (ImGui::TreeNode("Script Event Logging"))
 			{

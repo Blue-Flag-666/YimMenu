@@ -10,7 +10,6 @@ namespace big
 			notify::crash_blocked(src, "out of bounds object type");
 			return true;
 		}
-
 		g.m_syncing_player = src;
 		return g_hooking->get_original<hooks::received_clone_create>()(mgr, src, dst, object_type, object_id, object_flag, buffer, timestamp);
 	}

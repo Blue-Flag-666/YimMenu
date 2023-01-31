@@ -16,11 +16,11 @@ namespace big
 
 		Player orig_player;
 		int orig_participant;
-		
+
 		bool need_to_use_end_session_kick = g_player_service->m_player_to_use_end_session_kick &&
 			target->m_player_id == g_player_service->m_player_to_use_end_session_kick->get()->id() && _this->m_array == scr_globals::gsbd.as<void*>();
 
-		bool need_to_modify_wanted_level = g.session.wanted_level_all && (_this->m_array >= scr_globals::globalplayer_bd.as<uint8_t*>() && 
+		bool need_to_modify_wanted_level = g.session.wanted_level_all && (_this->m_array >= scr_globals::globalplayer_bd.as<uint8_t*>() &&
 			_this->m_array <= scr_globals::globalplayer_bd.at(31, sizeof(GlobalPlayerBDEntry) / 8).as<uint8_t*>());
 
 		bool need_to_turn_player_into_beast = g.m_hunt_the_beast_thread && g.m_hunt_the_beast_thread->m_stack && g.m_hunt_the_beast_thread->m_net_component &&

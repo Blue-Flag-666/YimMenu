@@ -22,13 +22,14 @@ namespace big
 
 			if (CPlayerInfo* player_info = g_player_service->get_selected()->get_player_info(); player_info != nullptr)
 			{
+				ImGui::Text("Host token: %u", player_info->m_net_player_data.m_host_token);
 				ImGui::Text("Wanted Level: %d", player_info->m_wanted_level);
+				ImGui::Text("Frame Flag: %d", player_info->m_frame_flags);
+				ImGui::Text("Game State: %d", player_info->m_game_state);
 			}
 
 			uint32_t ped_damage_bits = 0;
 			uint32_t ped_task_flag = 0;
-			uint32_t ped_health = 0;
-			uint32_t ped_maxhealth = 0;
 			uint32_t veh_damage_bits = 0;
 			std::string mode_str = "";
 
@@ -36,8 +37,6 @@ namespace big
 			{
 				ped_damage_bits = ped->m_damage_bits;
 				ped_task_flag = ped->m_ped_task_flag;
-				ped_health = ped->m_health;
-				ped_maxhealth = ped->m_maxhealth;
 			}
 
 			if (ped_damage_bits & (uint32_t)eEntityProofs::GOD)
@@ -53,10 +52,6 @@ namespace big
 				if (ped_damage_bits & (uint32_t)eEntityProofs::EXPLOSION)
 				{
 					mode_str += "Explosion, ";
-				}
-				if (ped_health > 328 || ped_maxhealth > 328 && !(uint32_t)eEntityProofs::EXPLOSION && !(uint32_t)eEntityProofs::BULLET)
-				{
-					mode_str += "Unnatural Health";
 				}
 			}
 
@@ -150,7 +145,6 @@ namespace big
 				ImGui::Text("Money In Bank: %d", stats.Money - stats.WalletBalance);
 				ImGui::Text("Total Money: %d", stats.Money);
 				ImGui::Text("Rank: %d (RP %d)", stats.Rank, stats.RP);
-				ImGui::Text("Health: %d (MaxHealth: %d)", ped_health, ped_maxhealth);
 				ImGui::Text("K/D Ratio: %f", stats.KdRatio);
 				ImGui::Text("Kills On Players: %d", stats.KillsOnPlayers);
 				ImGui::Text("Deaths By Players: %d", stats.DeathsByPlayers);

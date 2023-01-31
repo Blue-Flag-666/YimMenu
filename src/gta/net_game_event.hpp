@@ -403,7 +403,14 @@ namespace rage
 			uint32_t m_connection_identifier; //0x0044
 			InFrame* m_this; //0x0048
 			uint32_t m_peer_id; //0x0050
-			char pad_0050[36]; //0x0058
+			char pad_0050[12]; //0x0050
+			uint8_t m_ip_field_1; //0x0060
+			uint8_t m_ip_field_2; //0x0061
+			uint8_t m_ip_field_3; //0x0062
+			uint8_t m_ip_field_4; //0x0063
+			char pad_0064[18]; //0x0064
+			bool unk_0076; //0x0076
+			char pad_0077[1]; //0x0077
 			uint32_t m_length; //0x0078
 			char pad_007C[4]; //0x007C
 			void* m_data; //0x0080

@@ -12,9 +12,9 @@ namespace big
 		{ eBoostBehaviors::DEFAULT, "default" },
 		{ eBoostBehaviors::INSTANT_REFIL, "instant" },
 		{ eBoostBehaviors::INFINITE_BOOST, "infinite" }
-	})
+		})
 
-	enum class CustomWeapon
+		enum class CustomWeapon
 	{
 		NONE,
 		CAGE_GUN,
@@ -32,9 +32,9 @@ namespace big
 		{ CustomWeapon::STEAL_VEHICLE_GUN, "steal" },
 		{ CustomWeapon::REPAIR_GUN, "repair" },
 		{ CustomWeapon::VEHICLE_GUN, "vehicle" },
-	})
+		})
 
-	enum class ContextEntityType : uint8_t
+		enum class ContextEntityType : uint8_t
 	{
 		NONE = 0,
 		PED = 1 << 0,
@@ -141,14 +141,43 @@ namespace big
 		UNK2 = 1 << 16
 	};
 
-    enum class ePedTask
-    {
-        TASK_NONE,
-        TASK_FOOT = 1 << 4,
-        TASK_UNK = 1 << 5,
-        TASK_DRIVING = 1 << 6
-    };
-	
+	enum class ePedTask
+	{
+		TASK_NONE,
+		TASK_FOOT = 1 << 4,
+		TASK_UNK = 1 << 5,
+		TASK_DRIVING = 1 << 6
+	};
+
+	enum ePedCompData
+	{
+		PED_COMP_INVALID = -1,
+		PED_COMP_HEAD,         // HEAD
+		PED_COMP_MASKS,        // BERD
+		PED_COMP_HAIR,         // HAIR
+		PED_COMP_TORSO,        // UPPR
+		PED_COMP_LEGS,         // LOWR
+		PED_COMP_BAGS,         // HAND
+		PED_COMP_FEET,         // FEET
+		PED_COMP_ACCESSORIES,  // TEEF
+		PED_COMP_UNDERSHIRT,   // ACCS
+		PED_COMP_BODY_ARMOR,   // TASK
+		PED_COMP_DECALS,       // DECL
+		PED_COMP_TOPS,         // JBIB
+		PED_COMP_MAX
+	};
+
+	enum ePedPropsData
+	{
+		PED_PROP_INVALID = -1,
+		PED_PROP_HATS,
+		PED_PROP_GLASSES,
+		PED_PROP_EARS,
+		PED_PROP_WATCHES = 6,
+		PED_PROP_BRACELETS = 7,
+		PED_PROP_MAX = 5
+	};
+
 	enum class eRemoteEvent
 	{
 		Bounty = 1370461707, // (137, "FM_TXT_BNTY0", iVar1, PLAYER::GET_PLAYER_NAME(Var2.f_1), "", 5000, Var2.f_6);
@@ -194,11 +223,11 @@ namespace big
 		DestroyPersonalVehicle = -513394492, // CnC_PV_THEFT
 		TriggerCEORaid = -1322731185,
 
-		StartScriptBegin = -1127353498,
-		StartScriptProceed = -16793987,
-
 		BadThing1 = 1279059857,
-		BadThing2 = -343495611
+		BadThing2 = -343495611,
+
+		StartScriptBegin = -1127353498,
+		StartScriptProceed = -16793987
 	};
 
 	enum class eCollectibleType
@@ -240,9 +269,9 @@ namespace big
 		{ SpeedUnit::KMPH, "kmph" },
 		{ SpeedUnit::MIPH, "miph" },
 		{ SpeedUnit::MPS, "mps" },
-	})
+		})
 
-	enum class RainbowPaintType
+		enum class RainbowPaintType
 	{
 		Off,
 		Fade,
@@ -252,9 +281,9 @@ namespace big
 		{ RainbowPaintType::Off, "off" },
 		{ RainbowPaintType::Fade, "fade" },
 		{ RainbowPaintType::Spasm, "spasm" },
-	})
+		})
 
-	enum class AutoDriveDestination
+		enum class AutoDriveDestination
 	{
 		STOPPED,
 		OBJECTITVE,
@@ -268,9 +297,9 @@ namespace big
 		{ AutoDriveDestination::WAYPOINT, "waypoint" },
 		{ AutoDriveDestination::WANDER, "wander" },
 		{ AutoDriveDestination::EMERGENCY_STOP, "emergency_stop" },
-	})
+		})
 
-	enum class AutoDriveStyle
+		enum class AutoDriveStyle
 	{
 		LAW_ABIDING,
 		THE_ROAD_IS_YOURS
@@ -278,19 +307,19 @@ namespace big
 	NLOHMANN_JSON_SERIALIZE_ENUM(AutoDriveStyle, {
 		{ AutoDriveStyle::LAW_ABIDING, "law_abiding" },
 		{ AutoDriveStyle::THE_ROAD_IS_YOURS, "the_road_is_yours" },
-	})
+		})
 
-	enum class eEntityProofs : uint32_t
+		enum class eEntityProofs : uint32_t
 	{
-		BULLET     = 1 << 4,
-		FIRE       = 1 << 5,
-		COLLISION  = 1 << 6,
-		MELEE      = 1 << 7,
-		GOD        = 1 << 8,
-		EXPLOSION  = 1 << 11,
-		STEAM      = 1 << 15,
-		DROWN      = 1 << 16,
-		WATER      = 1 << 24,
+		BULLET = 1 << 4,
+		FIRE = 1 << 5,
+		COLLISION = 1 << 6,
+		MELEE = 1 << 7,
+		GOD = 1 << 8,
+		EXPLOSION = 1 << 11,
+		STEAM = 1 << 15,
+		DROWN = 1 << 16,
+		WATER = 1 << 24,
 	};
 	enum ePedType : uint32_t
 	{
@@ -324,6 +353,48 @@ namespace big
 		PED_TYPE_SWAT,
 		PED_TYPE_ANIMAL,
 		PED_TYPE_ARMY
+	};
+
+	enum object_type : uint32_t 
+	{
+		CAR = 0,
+		BIKE = 1,
+		BOAT = 2,
+		DOOR = 3,
+		HELI = 4,
+		OBJECT = 5,
+		PED = 6,
+		PICKUP = 7,
+		PICKUP_PLACEMENT = 8,
+		PLANE = 9,
+		SUBMARINE = 10,
+		PLAYER = 11,
+		TRAILER = 12,
+		TRAIN = 13,
+	};
+
+	enum eAnimationFlags
+	{
+		ANIM_FLAG_NORMAL = 0,
+		ANIM_FLAG_REPEAT = 1,
+		ANIM_FLAG_STOP_LAST_FRAME = 2,
+		ANIM_FLAG_UPPERBODY = 16,
+		ANIM_FLAG_ENABLE_PLAYER_CONTROL = 32,
+		ANIM_FLAG_CANCELABLE = 120,
+	};
+
+	enum ePlayerStatType // Skidded from gir489
+	{
+		RP = 1,
+		MoneyCash = 3,
+		GlobalRP = 5,
+		Rank = 6,
+		KDRatio = 26,
+		Kills = 28,
+		Deaths = 29,
+		CanSpectate = 52,
+		FavoriteRadio = 53,
+		MoneyAll = 56,
 	};
 
 	enum class HudComponents {
@@ -365,5 +436,5 @@ namespace big
 		{ CommandAccessLevel::AGGRESSIVE, "aggressive" },
 		{ CommandAccessLevel::TOXIC, "toxic" },
 		{ CommandAccessLevel::ADMIN, "admin" }
-	})
+		})
 }

@@ -54,24 +54,24 @@ namespace big
 		m_update_state = eGtaDataUpdateState::WAITING_FOR_ONLINE;
 
 		g_fiber_pool->queue_job([this]
-		{
-			session::join_type(eSessionType::SOLO);
-
-			while (!*g_pointers->m_is_session_started)
 			{
-				script::get_current()->yield(100ms);
-			}
+				session::join_type(eSessionType::SOLO);
 
-			rebuild_cache();
-		});
+		while (!*g_pointers->m_is_session_started)
+		{
+			script::get_current()->yield(100ms);
+		}
+
+		rebuild_cache();
+			});
 	}
 
 	void gta_data_service::update_now()
 	{
 		g_fiber_pool->queue_job([this]
-		{
-			rebuild_cache();
-		});
+			{
+				rebuild_cache();
+			});
 	}
 
 	// innefficient getters, don't care to fix right now
@@ -241,211 +241,211 @@ namespace big
 
 		LOG(INFO) << "Rebuilding cache started...";
 		yim_fipackfile::for_each_fipackfile([&](yim_fipackfile& rpf_wrapper)
-		{
-			const auto files = rpf_wrapper.get_file_paths();
-			for (const auto& file : files)
 			{
-				if (file.filename() == "setup2.xml")
-				{
-					std::string dlc_name;
-					rpf_wrapper.read_xml_file(file, [&dlc_name](pugi::xml_document& doc)
+				const auto files = rpf_wrapper.get_file_paths();
+		for (const auto& file : files)
+		{
+			if (file.filename() == "setup2.xml")
+			{
+				std::string dlc_name;
+				rpf_wrapper.read_xml_file(file, [&dlc_name](pugi::xml_document& doc)
 					{
 						const auto item = doc.select_node("/SSetupData/nameHash");
-						dlc_name = item.node().text().as_string();
+				dlc_name = item.node().text().as_string();
 					});
 
-					if (dlc_name == "mpG9EC")
-					{
-						LOG(G3LOG_DEBUG) << "Bad DLC, skipping...";
-
-						return std::size_t(0);
-					}
-				}
-				else if (file.filename() == "vehicles.meta")
+				if (dlc_name == "mpG9EC")
 				{
-					rpf_wrapper.read_xml_file(file, [&exists, &vehicles, &mapped_vehicles](pugi::xml_document& doc)
+					LOG(G3LOG_DEBUG) << "Bad DLC, skipping...";
+
+					return std::size_t(0);
+				}
+			}
+			else if (file.filename() == "vehicles.meta")
+			{
+				rpf_wrapper.read_xml_file(file, [&exists, &vehicles, &mapped_vehicles](pugi::xml_document& doc)
 					{
 						const auto& items = doc.select_nodes("/CVehicleModelInfo__InitDataList/InitDatas/Item");
-						for (const auto& item_node : items)
-						{
-							const auto item = item_node.node();
-
-							const auto name = item.child("modelName").text().as_string();
-							const auto hash = rage::joaat(name);
-
-							if (exists(mapped_vehicles, hash))
-								continue;
-							mapped_vehicles.emplace_back(hash);
-
-							auto veh = vehicle_item{};
-							std::strncpy(veh.m_name, name, sizeof(veh.m_name));
-
-							const auto manufacturer_display = item.child("vehicleMakeName").text().as_string();
-							std::strncpy(
-								veh.m_display_manufacturer,
-								HUD::GET_FILENAME_FOR_AUDIO_CONVERSATION(manufacturer_display),
-								sizeof(veh.m_display_manufacturer));
-
-							const auto game_name = item.child("gameName").text().as_string();
-							std::strncpy(
-								veh.m_display_name,
-								HUD::GET_FILENAME_FOR_AUDIO_CONVERSATION(game_name),
-								sizeof(veh.m_display_name));
-
-							const auto vehicle_class = item.child("vehicleClass").text().as_string();
-							constexpr auto enum_prefix_len = 3;
-							if (std::strlen(vehicle_class) > enum_prefix_len)
-								std::strncpy(veh.m_vehicle_class, vehicle_class + enum_prefix_len, sizeof(veh.m_vehicle_class));
-							
-							veh.m_hash = hash;
-
-							vehicles.emplace_back(std::move(veh));
-						}
-					});
-				}
-				else if (const auto file_str = file.string(); file_str.find("weapon") != std::string::npos && file.extension() == ".meta")
+				for (const auto& item_node : items)
 				{
-					rpf_wrapper.read_xml_file(file, [&exists, &weapons, &mapped_weapons](pugi::xml_document& doc)
+					const auto item = item_node.node();
+
+					const auto name = item.child("modelName").text().as_string();
+					const auto hash = rage::joaat(name);
+
+					if (exists(mapped_vehicles, hash))
+						continue;
+					mapped_vehicles.emplace_back(hash);
+
+					auto veh = vehicle_item{};
+					std::strncpy(veh.m_name, name, sizeof(veh.m_name));
+
+					const auto manufacturer_display = item.child("vehicleMakeName").text().as_string();
+					std::strncpy(
+						veh.m_display_manufacturer,
+						HUD::GET_FILENAME_FOR_AUDIO_CONVERSATION(manufacturer_display),
+						sizeof(veh.m_display_manufacturer));
+
+					const auto game_name = item.child("gameName").text().as_string();
+					std::strncpy(
+						veh.m_display_name,
+						HUD::GET_FILENAME_FOR_AUDIO_CONVERSATION(game_name),
+						sizeof(veh.m_display_name));
+
+					const auto vehicle_class = item.child("vehicleClass").text().as_string();
+					constexpr auto enum_prefix_len = 3;
+					if (std::strlen(vehicle_class) > enum_prefix_len)
+						std::strncpy(veh.m_vehicle_class, vehicle_class + enum_prefix_len, sizeof(veh.m_vehicle_class));
+
+					veh.m_hash = hash;
+
+					vehicles.emplace_back(std::move(veh));
+				}
+					});
+			}
+			else if (const auto file_str = file.string(); file_str.find("weapon") != std::string::npos && file.extension() == ".meta")
+			{
+				rpf_wrapper.read_xml_file(file, [&exists, &weapons, &mapped_weapons](pugi::xml_document& doc)
 					{
 						const auto& items = doc.select_nodes("/CWeaponInfoBlob/Infos/Item/Infos/Item[@type='CWeaponInfo']");
-						for (const auto& item_node : items)
-						{
-							const auto item = item_node.node();
-							const auto name = item.child("Name").text().as_string();
-							const auto hash = rage::joaat(name);
-
-							if (hash == RAGE_JOAAT("WEAPON_BIRD_CRAP"))
-								continue;
-
-							if (exists(mapped_weapons, hash))
-								continue;
-							mapped_weapons.emplace_back(hash);
-
-							const auto human_name_hash = item.child("HumanNameHash").text().as_string();
-							if (std::strcmp(human_name_hash, "WT_INVALID") == 0 || std::strcmp(human_name_hash, "WT_VEHMINE") == 0)
-								continue;
-
-							auto weapon = weapon_item{};
-
-							std::strncpy(weapon.m_name, name, sizeof(weapon.m_name));
-
-							const auto display_name = HUD::GET_FILENAME_FOR_AUDIO_CONVERSATION(human_name_hash);
-							std::strncpy(weapon.m_display_name, display_name, sizeof(weapon.m_name));
-
-							auto weapon_flags = std::string(
-								item.child("WeaponFlags").text().as_string()
-							);
-
-							bool is_gun = false;
-							bool is_rechargable = false;
-
-							const char* category = "";
-
-							std::size_t pos;
-							while ((pos = weapon_flags.find(' ')) != std::string::npos) 
-							{
-								const auto flag = weapon_flags.substr(0, pos);
-								if (flag == "Thrown")
-								{
-									weapon.m_throwable = true;
-								}
-								else if (flag == "Gun")
-								{
-									is_gun = true;
-								}
-								else if (flag == "DisplayRechargeTimeHUD")
-								{
-									is_rechargable = true;
-								}
-								else if (flag == "Vehicle" || flag == "HiddenFromWeaponWheel" || flag == "NotAWeapon")
-								{
-									goto skip;
-								}
-
-								weapon_flags.erase(0, pos + 1);
-							}
-
-							category = item.child("Group").text().as_string();
-
-							if (std::strlen(category) == 0 || std::strcmp(category, "GROUP_DIGISCANNER") == 0)
-								continue;
-
-							if (std::strlen(category) > 6)
-							{
-								std::strncpy(weapon.m_weapon_type, category + 6, sizeof(weapon.m_weapon_type));
-							}
-
-							if (is_gun || !std::strcmp(weapon.m_weapon_type, "MELEE") || !std::strcmp(weapon.m_weapon_type, "UNARMED"))
-							{
-								const std::string reward_prefix = "REWARD_";
-								weapon.m_reward_hash = rage::joaat(reward_prefix + name);
-
-								if (is_gun && !is_rechargable)
-								{
-									std::string weapon_id = name + 7;
-									weapon.m_reward_ammo_hash = rage::joaat(reward_prefix + "AMMO_" + weapon_id);
-								}
-							}
-
-							weapon.m_hash = hash;
-
-							weapons.emplace_back(std::move(weapon));
-skip:
-							continue;
-						}
-					});
-				}
-				else if (file.filename() == "peds.meta")
+				for (const auto& item_node : items)
 				{
-					rpf_wrapper.read_xml_file(file, [&exists, &peds, &mapped_peds](pugi::xml_document& doc)
+					const auto item = item_node.node();
+					const auto name = item.child("Name").text().as_string();
+					const auto hash = rage::joaat(name);
+
+					if (hash == RAGE_JOAAT("WEAPON_BIRD_CRAP"))
+						continue;
+
+					if (exists(mapped_weapons, hash))
+						continue;
+					mapped_weapons.emplace_back(hash);
+
+					const auto human_name_hash = item.child("HumanNameHash").text().as_string();
+					if (std::strcmp(human_name_hash, "WT_INVALID") == 0 || std::strcmp(human_name_hash, "WT_VEHMINE") == 0)
+						continue;
+
+					auto weapon = weapon_item{};
+
+					std::strncpy(weapon.m_name, name, sizeof(weapon.m_name));
+
+					const auto display_name = HUD::GET_FILENAME_FOR_AUDIO_CONVERSATION(human_name_hash);
+					std::strncpy(weapon.m_display_name, display_name, sizeof(weapon.m_name));
+
+					auto weapon_flags = std::string(
+						item.child("WeaponFlags").text().as_string()
+					);
+
+					bool is_gun = false;
+					bool is_rechargable = false;
+
+					const char* category = "";
+
+					std::size_t pos;
+					while ((pos = weapon_flags.find(' ')) != std::string::npos)
+					{
+						const auto flag = weapon_flags.substr(0, pos);
+						if (flag == "Thrown")
+						{
+							weapon.m_throwable = true;
+						}
+						else if (flag == "Gun")
+						{
+							is_gun = true;
+						}
+						else if (flag == "DisplayRechargeTimeHUD")
+						{
+							is_rechargable = true;
+						}
+						else if (flag == "Vehicle" || flag == "HiddenFromWeaponWheel" || flag == "NotAWeapon")
+						{
+							goto skip;
+						}
+
+						weapon_flags.erase(0, pos + 1);
+					}
+
+					category = item.child("Group").text().as_string();
+
+					if (std::strlen(category) == 0 || std::strcmp(category, "GROUP_DIGISCANNER") == 0)
+						continue;
+
+					if (std::strlen(category) > 6)
+					{
+						std::strncpy(weapon.m_weapon_type, category + 6, sizeof(weapon.m_weapon_type));
+					}
+
+					if (is_gun || !std::strcmp(weapon.m_weapon_type, "MELEE") || !std::strcmp(weapon.m_weapon_type, "UNARMED"))
+					{
+						const std::string reward_prefix = "REWARD_";
+						weapon.m_reward_hash = rage::joaat(reward_prefix + name);
+
+						if (is_gun && !is_rechargable)
+						{
+							std::string weapon_id = name + 7;
+							weapon.m_reward_ammo_hash = rage::joaat(reward_prefix + "AMMO_" + weapon_id);
+						}
+					}
+
+					weapon.m_hash = hash;
+
+					weapons.emplace_back(std::move(weapon));
+				skip:
+					continue;
+				}
+					});
+			}
+			else if (file.filename() == "peds.meta")
+			{
+				rpf_wrapper.read_xml_file(file, [&exists, &peds, &mapped_peds](pugi::xml_document& doc)
 					{
 						parse_ped(peds, mapped_peds, doc);
 					});
-				}
 			}
+		}
 
-			return files.size();
-		});
+		return files.size();
+			});
 
 		m_update_state = eGtaDataUpdateState::IDLE;
 		LOG(INFO) << "Cache has been rebuilt.\n\tPeds: " << peds.size() << "\n\tVehicles: " << vehicles.size() << "\n\tWeapons: " << weapons.size();
 
 		LOG(G3LOG_DEBUG) << "Starting cache saving procedure...";
 		g_thread_pool->push([this, peds = std::move(peds), vehicles = std::move(vehicles), weapons = std::move(weapons)]
+			{
+				const auto game_version = std::strtoul(g_pointers->m_game_version, nullptr, 10);
+		const auto online_version = std::strtof(g_pointers->m_online_version, nullptr);
+
 		{
-			const auto game_version = std::strtoul(g_pointers->m_game_version, nullptr, 10);
-			const auto online_version = std::strtof(g_pointers->m_online_version, nullptr);
+			const auto data_size = sizeof(ped_item) * peds.size();
+			m_peds_cache.set_data(std::make_unique<std::uint8_t[]>(data_size), data_size);
+			std::memcpy(m_peds_cache.data(), peds.data(), data_size);
 
-			{
-				const auto data_size = sizeof(ped_item) * peds.size();
-				m_peds_cache.set_data(std::make_unique<std::uint8_t[]>(data_size), data_size);
-				std::memcpy(m_peds_cache.data(), peds.data(), data_size);
+			m_peds_cache.set_header_version(game_version, online_version);
+			m_peds_cache.write();
+		}
 
-				m_peds_cache.set_header_version(game_version, online_version);
-				m_peds_cache.write();
-			}
+		{
+			const auto data_size = sizeof(vehicle_item) * vehicles.size();
+			m_vehicles_cache.set_data(std::make_unique<std::uint8_t[]>(data_size), data_size);
+			std::memcpy(m_vehicles_cache.data(), vehicles.data(), data_size);
 
-			{
-				const auto data_size = sizeof(vehicle_item) * vehicles.size();
-				m_vehicles_cache.set_data(std::make_unique<std::uint8_t[]>(data_size), data_size);
-				std::memcpy(m_vehicles_cache.data(), vehicles.data(), data_size);
+			m_vehicles_cache.set_header_version(game_version, online_version);
+			m_vehicles_cache.write();
+		}
 
-				m_vehicles_cache.set_header_version(game_version, online_version);
-				m_vehicles_cache.write();
-			}
+		{
+			const auto data_size = sizeof(weapon_item) * weapons.size();
+			m_weapons_cache.set_data(std::make_unique<std::uint8_t[]>(data_size), data_size);
+			std::memcpy(m_weapons_cache.data(), weapons.data(), data_size);
 
-			{
-				const auto data_size = sizeof(weapon_item) * weapons.size();
-				m_weapons_cache.set_data(std::make_unique<std::uint8_t[]>(data_size), data_size);
-				std::memcpy(m_weapons_cache.data(), weapons.data(), data_size);
+			m_weapons_cache.set_header_version(game_version, online_version);
+			m_weapons_cache.write();
+		}
 
-				m_weapons_cache.set_header_version(game_version, online_version);
-				m_weapons_cache.write();
-			}
+		LOG(INFO) << "Finished writing cache to disk.";
 
-			LOG(INFO) << "Finished writing cache to disk.";
-
-			load_data();
-		});
+		load_data();
+			});
 	}
 }

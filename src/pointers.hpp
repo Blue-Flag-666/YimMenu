@@ -69,7 +69,7 @@ namespace big
 		PVOID m_world_model_spawn_bypass;
 		PVOID m_native_return;
 		PVOID m_get_label_text;
-		functions::check_chat_profanity* m_check_chat_profanity{};
+		functions::multiplayer_chat_filter* m_multiplayer_chat_filter{};
 		functions::write_player_game_state_data_node m_write_player_game_state_data_node{};
 
 		ChatData** m_chat_data;
@@ -203,7 +203,7 @@ namespace big
 
 		rage::atSingleton<rage::RageSecurity>* m_security;
 		PVOID m_prepare_metric_for_sending;
-		
+
 		PVOID m_queue_dependency;
 		PVOID m_interval_check_func;
 
@@ -232,7 +232,7 @@ namespace big
 
 		functions::send_packet m_send_packet;
 		functions::connect_to_peer m_connect_to_peer;
-    
+
 		PVOID m_fragment_physics_crash;
 		PVOID m_fragment_physics_crash_2;
 
@@ -244,6 +244,9 @@ namespace big
 		functions::get_entity_attached_to m_get_entity_attached_to;
 
 		PVOID m_received_array_update;
+		PVOID m_send_clone_sync;
+		PVOID m_anti_anti_cheat;
+		PVOID m_anti_anti_cheat_2;
 	};
 
 	inline pointers* g_pointers{};

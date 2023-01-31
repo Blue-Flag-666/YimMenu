@@ -3,12 +3,12 @@
 
 constexpr static auto advertisments = std::to_array(
 {
-	"~h~~r~YimMenu",
-	"~h~~g~YimMenu",
-	"~h~~b~YimMenu",
-	"~h~~y~YimMenu",
-	"~h~~o~YimMenu",
-	"~h~~p~YimMenu"
+	"~h~~r~Prometheus",
+	"~h~~g~Prometheus",
+	"~h~~b~Prometheus",
+	"~h~~y~Prometheus",
+	"~h~~o~Prometheus",
+	"~h~~p~Prometheus"
 });
 
 namespace big

@@ -10,9 +10,10 @@ namespace big
 		if (ImGui::Begin("menu_heading", nullptr, window_flags | ImGuiWindowFlags_NoScrollbar))
 		{
 			ImGui::BeginGroup();
-			ImGui::Text("Welcome");
+			components::title("Prome");
+			ImGui::SameLine(0, 0);
 			ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.172f, 0.380f, 0.909f, 1.f));
-			ImGui::Text(g_local_player == nullptr || g_local_player->m_player_info == nullptr ? "unknown" : g_local_player->m_player_info->m_net_player_data.m_name);
+			components::title("Theus");
 			ImGui::PopStyleColor();
 			ImGui::EndGroup();
 			ImGui::SameLine();
@@ -21,13 +22,13 @@ namespace big
 			if (components::nav_button("Unload"))
 			{
 				g_fiber_pool->queue_job([]
-				{
-					for (auto& command : g_looped_commands)
+					{
+						for (auto& command : g_looped_commands)
 						if (command->is_enabled())
 							command->on_disable();
 
-					g_running = false;
-				});
+				g_running = false;
+					});
 			}
 			ImGui::PopStyleColor();
 		}

@@ -33,7 +33,7 @@ namespace big::functions
 	using get_native_handler = rage::scrNativeHandler(*)(rage::scrNativeRegistrationTable* registration_table, rage::scrNativeHash hash);
 	using fix_vectors = void(*)(rage::scrNativeCallContext* call_ctx);
 
-	using get_net_game_player = CNetGamePlayer*(*)(Player player);
+	using get_net_game_player = CNetGamePlayer * (*)(Player player);
 
 	using trigger_script_event = void(*)(int event_group, int64_t* args, int arg_count, int player_bits);
 
@@ -41,9 +41,9 @@ namespace big::functions
 	using increment_stat_event = bool(*)(uint64_t net_event_struct, int64_t sender, int64_t a3);
 
 	using ptr_to_handle = Entity(*)(void*);
-	using handle_to_ptr = rage::CDynamicEntity*(*)(Entity);
-	
-	using check_chat_profanity = int(__int64 chat_type, const char* input, const char** output);
+	using handle_to_ptr = rage::CDynamicEntity* (*)(Entity);
+
+	using multiplayer_chat_filter = int(__int64 chat_type, const char* input, const char** output);
 	using write_player_game_state_data_node = bool(*)(rage::netObject* plr, CPlayerGameStateDataNode* node);
 
 	using get_gameplay_cam_coords = Vector3(*)();
@@ -70,34 +70,34 @@ namespace big::functions
 	// Received Event Signatures END
 
 	//Sync signatures START
-	using get_sync_type_info = const char*(*)(uint16_t sync_type, char a2);
+	using get_sync_type_info = const char* (*)(uint16_t sync_type, char a2);
 
-	using get_sync_tree_for_type = rage::netSyncTree*(*)(CNetworkObjectMgr* mgr, uint16_t sync_type);
+	using get_sync_tree_for_type = rage::netSyncTree* (*)(CNetworkObjectMgr* mgr, uint16_t sync_type);
 
-	using get_net_object = rage::netObject*(*)(CNetworkObjectMgr* mgr, int16_t id, bool can_delete_be_pending);
+	using get_net_object = rage::netObject* (*)(CNetworkObjectMgr* mgr, int16_t id, bool can_delete_be_pending);
 
-	using get_net_object_for_player = rage::netObject*(*)(CNetworkObjectMgr*, int16_t, CNetGamePlayer*, bool);
+	using get_net_object_for_player = rage::netObject* (*)(CNetworkObjectMgr*, int16_t, CNetGamePlayer*, bool);
 
 	using read_bitbuffer_into_sync_tree = void(*)(rage::netSyncTree* tree, uint64_t flag, uint32_t flag2, rage::datBitBuffer* buffer, uint64_t netLogStub);
 	//Sync signatures END
 
 	using reset_network_complaints = void(*)(CNetComplaintMgr* mgr);
 
-	using fidevice_get_device = rage::fiDevice*(*)(const char* path, bool allow_root);
-	using fipackfile_ctor = rage::fiPackfile*(*)(rage::fiPackfile* this_);
+	using fidevice_get_device = rage::fiDevice* (*)(const char* path, bool allow_root);
+	using fipackfile_ctor = rage::fiPackfile* (*)(rage::fiPackfile* this_);
 	using fipackfile_open_archive = bool(*)(rage::fiPackfile* this_, const char* archive, bool b_true, int type, intptr_t very_false);
 	using fipackfile_mount = bool(*)(rage::fiPackfile* this_, const char* mount_point);
 	using fipackfile_unmount = bool(*)(const char* mount_point);
 
 	using start_get_session_by_gamer_handle = bool(*)(int profile_index, rage::rlGamerHandle* handles, int count, rage::rlSessionByGamerTaskResult* result, int unk, bool* success, rage::rlTaskStatus* state);
 	using start_matchmaking_find_sessions = bool(*)(int profile_index, int available_slots, NetworkGameFilterMatchmakingComponent* m_filter, unsigned int max_sessions, rage::rlSessionInfo* result_sessions, int* result_session_count, rage::rlTaskStatus* state);
-	using start_get_presence_attributes = bool(*)(int profile_index, rage::rlScHandle * handle, rage::rlQueryPresenceAttributesContext* contexts, int count, rage::rlTaskStatus* state);
+	using start_get_presence_attributes = bool(*)(int profile_index, rage::rlScHandle* handle, rage::rlQueryPresenceAttributesContext* contexts, int count, rage::rlTaskStatus* state);
 	using join_session_by_info = bool(*)(Network* network, rage::rlSessionInfo* info, int unk, int flags, rage::rlGamerHandle* handles, int handlecount);
 
 	using generate_uuid = bool(*)(std::uint64_t* uuid);
 
 	using get_vehicle_gadget_array_size = int(*)(eVehicleGadgetType type);
-	
+
 	using write_join_response_data = bool(*)(CMsgJoinResponse* response, void* data, int size, uint32_t* size_used);
 
 	using queue_packet = bool(*)(rage::netConnectionManager* mgr, int msg_id, void* data, int size, int flags, void* unk);
@@ -122,7 +122,7 @@ namespace big::functions
 
 	using load_cloud_file = void(*)(sCloudFile** out_cloud_file, char* buffer, int size, const char* reason);
 	using set_as_active_cloud_file = void(*)(datafile_commands::SveFileObject* object, sCloudFile** file);
-	using save_json_data = char*(*)(datafile_commands::SveFileObject* object, int* out_length, const char* reason);
+	using save_json_data = char* (*)(datafile_commands::SveFileObject* object, int* out_length, const char* reason);
 
 	using sync_network_time = bool(*)(rage::netConnectionManager* mgr, rage::netConnectionPeer* peer, int connection_id, rage::netTimeSyncMsg* msg, int flags);
 	using send_packet = bool(*)(rage::netConnectionManager* mgr, rage::netConnectionPeer* peer, int connection_id, void* data, int size, int flags);
@@ -130,6 +130,6 @@ namespace big::functions
 
 	using clear_ped_tasks_network = void(*)(CPed* ped, bool immediately);
 
-	using get_next_carriage = void*(*)(void* carriage);
-	using get_entity_attached_to = rage::CDynamicEntity*(*)(rage::CDynamicEntity* entity);
+	using get_next_carriage = void* (*)(void* carriage);
+	using get_entity_attached_to = rage::CDynamicEntity* (*)(rage::CDynamicEntity* entity);
 }

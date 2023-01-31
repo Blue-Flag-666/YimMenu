@@ -50,24 +50,24 @@ namespace big
 		static void context_menu();
 
 		Entity m_handle;
-		rage::fwEntity* m_pointer{};
+		rage::fwEntity* m_pointer;
 		model_bounding_box_screen_space m_model_bounding_box_screen_space;
 
 		s_context_menu vehicle_menu{
 			ContextEntityType::VEHICLE,
 			0,{}, {
 			{"KILL ENGINE", [this] {
-					if (entity::take_control_of(m_handle))
-					{
-						VEHICLE::SET_VEHICLE_ENGINE_HEALTH(m_handle, 0.f);
-						VEHICLE::SET_VEHICLE_ENGINE_ON(m_handle, false, true, false);
-					}
+					//if (entity::take_control_of(m_handle))
+					//{
+					//	VEHICLE::SET_VEHICLE_ENGINE_HEALTH(m_handle, 0.f);
+					//	VEHICLE::SET_VEHICLE_ENGINE_ON(m_handle, false, true, false);
+					//}
 				}},
 			{"DELETE", [this] {
-					if (entity::take_control_of(m_handle))
-					{
-						entity::delete_entity(m_handle);
-					}
+					//if (entity::take_control_of(m_handle))
+					//{
+					//	entity::delete_entity(m_handle);
+					//}
 				}},
 			{ "TP INTO", [this] {
 				teleport::into_vehicle(m_handle);
@@ -87,7 +87,7 @@ namespace big
 			0,{}, {
 				{"STEAL IDENTITY", [this]
 				{
-					ped::steal_identity(m_handle);
+					//ped::steal_identity(m_handle);
 				}}
 			} };
 

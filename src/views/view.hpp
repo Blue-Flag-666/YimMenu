@@ -4,7 +4,6 @@
 #include "esp/view_esp.hpp"
 #include "debug/view_debug.hpp"
 
-
 namespace big
 {
 	class view
@@ -28,6 +27,7 @@ namespace big
 		static void navigation();
 		static void notifications();
 		static void overlay();
+		static void log();
 		static void root();
 		static void self();
 		static void session();
@@ -51,13 +51,20 @@ namespace big
 		static void context_menu();
 		static void gta_data();
 		static void creator();
-		static void train();
+		static void heist_control();
+		static void ped_editor();
+		static void animation();
 		static void water();
 
 		static void player_info();
-		static void player_troll();
+		static void player_teleport();
+		static void player_friendly();
 		static void player_kick();
 		static void player_toxic();
+		static void player_attacker();
 		static void player_misc();
+		static void player_acrobatic();
+		static void player_vehicle();
+		static void player_anti_cheat();
 	};
 }

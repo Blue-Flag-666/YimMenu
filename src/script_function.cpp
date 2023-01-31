@@ -28,7 +28,7 @@ namespace big
 			auto location = scripts::get_code_location_by_pattern(program, m_pattern);
 			
 			if (!location)
-				LOG(FATAL) << "Failed to find pattern " << m_name << " in script " << program->m_name;
+				LOG(WARNING) << "Failed to find pattern " << m_name << " in script " << program->m_name;
 			else
 				LOG(DEBUG) << "Found pattern " << m_name << " in script " << program->m_name;
 

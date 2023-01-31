@@ -14,7 +14,8 @@ namespace big
 		TRIED_CRASH_PLAYER,
 		TRIED_KICK_PLAYER,
 		BLAME_EXPLOSION_DETECTED,
-		ATTACKING_WITH_GODMODE
+		ATTACKING_WITH_GODMODE,
+		SPOOFED_IP
 	};
 
     inline std::unordered_map<Infraction, const char*> infraction_desc =
@@ -27,6 +28,7 @@ namespace big
 		{Infraction::TRIED_CRASH_PLAYER, "Tried to crash you"},
 		{Infraction::TRIED_KICK_PLAYER, "Tried to kick you"},
 		{Infraction::BLAME_EXPLOSION_DETECTED, "Tried to blame someone for their explosion"},
-		{Infraction::ATTACKING_WITH_GODMODE, "Attacked someone when using godmode"}
+		{Infraction::ATTACKING_WITH_GODMODE, "Attacked someone when using godmode"},
+		{Infraction::SPOOFED_IP, "Had spoofed IP"}
 	};
 }

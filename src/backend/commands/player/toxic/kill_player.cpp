@@ -1,6 +1,7 @@
 #include "backend/player_command.hpp"
 #include "natives.hpp"
 #include "pointers.hpp"
+#include "util/toxic.hpp"
 
 namespace big
 {
@@ -15,11 +16,11 @@ namespace big
 
 		virtual void execute(player_ptr player, const std::vector<std::uint64_t>& _args, const std::shared_ptr<command_context> ctx)
 		{
-			if (!player->get_ped())
-				return;
-
-			g_pointers->m_send_network_damage((CEntity*)g_player_service->get_self()->get_ped(), (CEntity*)player->get_ped(), player->get_ped()->m_navigation->get_position(),
-				0, true, RAGE_JOAAT("weapon_explosion"), 10000.0f, 2, 0, (1 << 4), 0, 0, 0, false, false, true, true, nullptr);
+			toxic::blame_explode_player(
+				player,
+				player,
+				eExplosionTag::PLANE, 1000, false, true, 0.f
+			);
 		}
 	};
 

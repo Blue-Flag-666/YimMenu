@@ -15,7 +15,7 @@ namespace big
 			{
 				if (plyr.second->is_host())
 				{
-					((player_command*)(command::get(RAGE_JOAAT("lckick"))))->call(plyr.second, {});
+					((player_command*)(command::get(RAGE_JOAAT("breakup"))))->call(plyr.second, {});
 				}
 			});
 		}

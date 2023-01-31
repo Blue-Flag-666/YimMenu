@@ -5,6 +5,7 @@
 #include "services/context_menu/context_menu_service.hpp"
 #include "script_patches.hpp"
 #include "looped_command.hpp"
+#include "services/anti_cheat/anti_cheat_service.hpp"
 
 namespace big
 {
@@ -22,12 +23,23 @@ namespace big
 			looped::system_desync_kick_protection();
 			looped::system_spoofing();
 			looped::system_mission_creator();
+			looped::system_auto_tp();
 
 			for (auto command : g_looped_commands)
 				if (command->is_enabled())
 					command->on_tick();
 
 			script::get_current()->yield();
+		}
+	}
+
+	void backend::anti_cheat()
+	{
+		LOG(INFO) << "Starting Anti-Cheat";
+		while (g_running) {
+			looped::anti_cheat();
+
+			script::get_current()->yield(20s);
 		}
 	}
 
@@ -41,10 +53,34 @@ namespace big
 			looped::self_police();
 			looped::self_hud();
 			looped::self_dance_mode();
+			looped::money_drop();
+			looped::collectable_drop();
+			//looped::aimbot();
+			looped::money_loop();
+			looped::nightclub_loop();
+			looped::fire_loop();
+			looped::water_loop();
+			//looped::super_man();
+			//looped::force_field();
+			//looped::hand_trail_red();
+			looped::hand_trail_green();
+			looped::hand_trail_blue();
+			looped::hand_trail_midnight();
+			looped::hand_trail_magenta();
+			//looped::move_water();
+			looped::container_rider();
+			//looped::tiny_player();
+			looped::walk_on_water();
+			//looped::fire_breath();
+			looped::magnet_gun();
+			//looped::beast_jump();
+			looped::flying_axe();
 
 			script::get_current()->yield();
 		}
 	}
+
+
 
 	void backend::weapons_loop()
 	{
@@ -60,6 +96,13 @@ namespace big
 			looped::weapons_repair_gun();
 			looped::weapons_steal_vehicle_gun();
 			looped::weapons_vehicle_gun();
+			looped::paint_gun();
+			looped::money_gun();
+			looped::fly_gun();
+			looped::valkery_gun();
+			looped::flame_thrower();
+			looped::rope_gun();
+			looped::collectable_gun();
 
 			script::get_current()->yield();
 		}
@@ -75,8 +118,10 @@ namespace big
 			looped::vehicle_boost_behavior();
 			looped::vehicle_god_mode();
 			looped::vehicle_speedo_meter();
-			looped::derail_train();
-			looped::drive_train();
+			looped::vehicle_trail();
+			looped::vehicle_uniweap();
+			looped::vehicle_invisible();
+			looped::drift_mode();
 
 			script::get_current()->yield();
 		}
@@ -106,6 +151,15 @@ namespace big
 			looped::session_force_thunder();
 			looped::session_randomize_ceo_colors();
 			looped::session_auto_kick_host();
+			looped::delete_vehicles();
+			looped::burst_vehicle_tires();
+			looped::launch_vehicle();
+			looped::horn_vehicles();
+			looped::repair_vehicles();
+			looped::upgrade_vehicles();
+			looped::explode_peds();
+			looped::rain_rockets();
+			looped::asteroid_shower();
 			looped::session_block_jobs();
 
 			script::get_current()->yield();
@@ -176,7 +230,6 @@ namespace big
 			script::get_current()->yield();
 		}
 	}
-
 	void backend::world_loop()
 	{
 		LOG(INFO) << "Starting script: World";
