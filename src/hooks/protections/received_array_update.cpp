@@ -38,7 +38,7 @@ namespace big
 		}
 
 		if ((array->m_array >= scr_globals::globalplayer_bd.as<uint8_t*>() &&
-			array->m_array <= scr_globals::globalplayer_bd.at(31, sizeof(GlobalPlayerBDEntry) / 8).as<uint8_t*>()) && 
+			array->m_array <= scr_globals::globalplayer_bd.at(31, sizeof(GlobalPlayerBDEntry) / 8).as<uint8_t*>()) &&
 			scr_globals::globalplayer_bd.as<GlobalPlayerBD*>()->Entries[sender->m_player_id].RemoteWantedLevelPlayer != -1)
 		{
 			if (auto plyr = g_player_service->get_by_id(sender->m_player_id))

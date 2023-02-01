@@ -2,7 +2,7 @@
 
 namespace big
 {
-    const crossmap g_crossmap {{
+    const crossmap g_crossmap{ {
     {0x846aa8e7d55ee5b6, 0x4b4e19d3ae9be33a},
     {0xd3a58a12c77d9d4b, 0xc6926392864d2133},
     {0x1514fb24c02c2322, 0xfb6ffdd94452972e},

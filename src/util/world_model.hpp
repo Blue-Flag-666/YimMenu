@@ -7,7 +7,7 @@ namespace big::world_model
 {
 	constexpr size_t patch_size = 24;
 	static inline std::once_flag once_flag;
-	static inline std::array<byte, patch_size> backup;
+	static inline std::array<unsigned char, patch_size> backup;
 	static inline void setup_backup()
 	{
 		memcpy(backup.data(), g_pointers->m_world_model_spawn_bypass, patch_size);

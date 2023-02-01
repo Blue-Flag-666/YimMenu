@@ -10,6 +10,8 @@
 #include "core/data/warehouse_names.hpp"
 #include "core/data/command_access_levels.hpp"
 #include "hooking.hpp"
+#include "util/troll.hpp"
+#include "util/toxic.hpp"
 
 #include <network/Network.hpp>
 #include <script/globals/GPBD_FM_3.hpp>
@@ -21,17 +23,22 @@ namespace big
 		static uint64_t rid = 0;
 		ImGui::InputScalar("Input RID", ImGuiDataType_U64, &rid);
 		components::button("Join by RID", []
-		{
-			session::join_by_rockstar_id(rid);
-		});
+			{
+				session::join_by_rockstar_id(rid);
+			});
 		ImGui::SameLine();
 		components::button("Kick by RID", []
-		{
-			session::kick_by_rockstar_id(rid);
-		});
+			{
+				session::kick_by_rockstar_id(rid);
+			});
+		ImGui::SameLine();
+		components::button("Crash by RID", []
+			{
+				session::crash_by_rockstar_id(rid);
+			});
 
 		static char username[20];
-		components::input_text("Input Username", username, sizeof(username));
+		ImGui::InputText("Input Username", username, sizeof(username));
 		if (components::button("Join by Username"))
 		{
 			session::join_by_username(username);
@@ -41,22 +48,28 @@ namespace big
 		{
 			session::kick_by_username(username);
 		};
+		ImGui::SameLine();
+		if (components::button("Crash by Username"))
+		{
+			session::crash_by_username(username);
+		};
+
 
 		static char base64[500]{};
-		components::input_text("Session Info", base64, sizeof(base64));
+		ImGui::InputText("Session Info", base64, sizeof(base64));
 		components::button("Join Session Info", []
-		{
-			rage::rlSessionInfo info;
-			g_pointers->m_decode_session_info(&info, base64, nullptr);
-			session::join_session(info);
-		});
+			{
+				rage::rlSessionInfo info;
+		g_pointers->m_decode_session_info(&info, base64, nullptr);
+		session::join_session(info);
+			});
 		ImGui::SameLine();
 		components::button("Copy Current Session Info", []
-		{
-			char buf[0x100];
-			g_pointers->m_encode_session_info(&gta_util::get_network()->m_game_session.m_rline_session.m_session_info, buf, 0x7D, nullptr);
-			ImGui::SetClipboardText(buf);
-		});
+			{
+				char buf[0x100];
+		g_pointers->m_encode_session_info(&gta_util::get_network()->m_game_session.m_rline_session.m_session_info, buf, 0x7D, nullptr);
+		ImGui::SetClipboardText(buf);
+			});
 
 		components::sub_title("Session Switcher");
 		if (ImGui::ListBoxHeader("###session_switch"))
@@ -64,22 +77,22 @@ namespace big
 			for (const auto& session_type : sessions)
 			{
 				components::selectable(session_type.name, false, [&session_type]
-				{
-					session::join_type(session_type.id);
-				});
+					{
+						session::join_type(session_type.id);
+					});
 			}
 			ImGui::EndListBox();
 		}
-		
+
 		components::sub_title("Region Switcher");
 		if (ImGui::ListBoxHeader("###region_switch"))
 		{
 			for (const auto& region_type : regions)
 			{
 				components::selectable(region_type.name, *g_pointers->m_region_code == region_type.id, [&region_type]
-				{
-					*g_pointers->m_region_code = region_type.id;
-				});
+					{
+						*g_pointers->m_region_code = region_type.id;
+					});
 			}
 			ImGui::EndListBox();
 		}
@@ -97,24 +110,22 @@ namespace big
 
 		components::sub_title("Chat");
 		ImGui::Checkbox("Auto-kick Chat Spammers", &g.session.kick_chat_spammers);
-		ImGui::Checkbox("Force Clean", &g.session.chat_force_clean);
-		if (ImGui::IsItemHovered())
-			ImGui::SetTooltip("Your sent chat messages will not be censored to the receivers");
+		ImGui::Checkbox("Disable Filter", &g.session.disable_chat_filter);
 		ImGui::Checkbox("Log Chat Messages", &g.session.log_chat_messages);
 		ImGui::Checkbox("Log Text Messages", &g.session.log_text_messages);
 		static char msg[256];
-		components::input_text("##message", msg, sizeof(msg));
+		ImGui::InputText("##message", msg, sizeof(msg));
 		ImGui::SameLine();
 		ImGui::Checkbox("Is Team", &g.session.is_team);
 		ImGui::SameLine();
 		components::button("Send", []
-		{
-            if (const auto net_game_player = gta_util::get_network_player_mgr()->m_local_net_player; net_game_player)
 			{
-                if (g_hooking->get_original<hooks::send_chat_message>()(*g_pointers->m_send_chat_ptr, net_game_player->get_net_data(), msg, g.session.is_team))
-					notify::draw_chat(msg, net_game_player->get_name(), g.session.is_team);
-			}
-		});
+				if (const auto net_game_player = gta_util::get_network_player_mgr()->m_local_net_player; net_game_player)
+				{
+					if (g_hooking->get_original<hooks::send_chat_message>()(*g_pointers->m_send_chat_ptr, net_game_player->get_net_data(), msg, g.session.is_team))
+						notify::draw_chat(msg, net_game_player->get_name(), g.session.is_team);
+				}
+			});
 
 		ImGui::Checkbox("Chat Commands", &g.session.chat_commands);
 		if (g.session.chat_commands)
@@ -174,9 +185,9 @@ namespace big
 
 		if (g.session.name_spoof_enabled)
 		{
-			ImGui::Checkbox("Advertise YimMenu", &g.session.advertise_menu);
+			ImGui::Checkbox("Advertise PromeTheus", &g.session.advertise_menu);
 			if (ImGui::IsItemHovered())
-				ImGui::SetTooltip("Advertise YimMenu by spoofing player names to differently colored variants of 'YimMenu'. You will not be able to customize the name with this option enabled");
+				ImGui::SetTooltip("Advertise PromeTheus by spoofing player names to differently colored variants of 'PromeTheus'. You will not be able to customize the name with this option enabled");
 
 			if (!g.session.advertise_menu)
 			{
@@ -185,12 +196,35 @@ namespace big
 				strcpy_s(name, sizeof(name), g.session.spoofed_name.c_str());
 
 				ImGui::Text("Name: ");
-				components::input_text("##username_input", name, sizeof(name));
+				ImGui::InputText("##username_input", name, sizeof(name));
 
 				if (name != g.session.spoofed_name)
 					g.session.spoofed_name = std::string(name);
 			}
 		}
+
+		components::sub_title("Nearby");
+		components::small_text("Vehicles");
+		ImGui::Checkbox("Delete Vehicles", &g.session.delete_vehicles);
+		ImGui::SameLine();
+		ImGui::Checkbox("Explode Vehicles Tire", &g.session.burst_vehicle_tires);
+
+		ImGui::Checkbox("Launch Vehicles", &g.session.launch_vehicles);
+		ImGui::SameLine();
+		ImGui::Checkbox("Horn Vehicles", &g.session.horn_vehicles);
+
+		ImGui::Checkbox("Repair Vehicles", &g.session.repair_vehicles);
+		ImGui::SameLine();
+		ImGui::Checkbox("Upgrade Vehicles", &g.session.upgrade_vehicles);
+
+		components::small_text("Peds");
+
+		ImGui::Checkbox("Explode Peds", &g.session.explode_peds);
+
+		components::small_text("World");
+		ImGui::Checkbox("Rain Rockets", &g.session.rain_rockets);
+
+		ImGui::Checkbox("Asteroid Shower", &g.session.asteroid_shower);
 
 		components::sub_title("All Players");
 		ImGui::Checkbox("Off The Radar", &g.session.off_radar_all);
@@ -231,7 +265,7 @@ namespace big
 		ImGui::SameLine();
 		components::command_button<"remweapsall">({ });
 
-		components::command_button<"ceokickall">( { });
+		components::command_button<"ceokickall">({ });
 		ImGui::SameLine();
 		components::command_button<"vehkickall">({ });
 
@@ -252,6 +286,10 @@ namespace big
 		components::command_button<"sextall">({ }, "Send Sexts");
 		ImGui::SameLine();
 		components::command_button<"fakebanall">({ }, "Send Fake Ban Messages");
+		static int bounty_value = 0;
+		ImGui::SliderInt("Bounty", &bounty_value, 0, 10000);
+		ImGui::SameLine();
+		components::command_button<"bountyall">({ }, "Give Everyone Bounty");
 
 		components::small_text("Teleports");
 
@@ -307,10 +345,8 @@ namespace big
 
 		components::button("TP All To Skydive", [] { g_player_service->iterate([](auto& plyr) { toxic::start_activity(plyr.second, eActivityType::Skydive); }); });
 		ImGui::SameLine();
-
 		components::command_button<"interiortpall">({ 81 }, "TP All To MOC");
 
-		ImGui::SameLine();
 		components::command_button<"interiortpall">({ 123 }, "TP All To Casino");
 		ImGui::SameLine();
 		components::command_button<"interiortpall">({ 124 }, "TP All To Penthouse");
@@ -328,24 +364,6 @@ namespace big
 		components::command_button<"interiortpall">({ 160 }, "TP All To Freakshop");
 		ImGui::SameLine();
 		components::command_button<"interiortpall">({ 161 }, "TP All To Multi Floor Garage");
-
-		components::command_button<"tutorialall">();
-		ImGui::SameLine();
-		components::command_button<"golfall">();
-		ImGui::SameLine();
-		components::command_button<"flightschoolall">();
-		ImGui::SameLine();
-		components::command_button<"dartsall">();
-
-		components::command_button<"badlandsall">();
-		ImGui::SameLine();
-		components::command_button<"spacemonkeyall">();
-		ImGui::SameLine();
-		components::command_button<"wizardall">();
-
-		components::command_button<"qub3dall">();
-		ImGui::SameLine();
-		components::command_button<"camhedzall">();
 
 		ImGui::Checkbox("Disable Pedestrians", &g.session.disable_peds);
 		ImGui::SameLine();

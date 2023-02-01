@@ -1,5 +1,6 @@
 #include "views/view.hpp"
 #include "renderer.hpp"
+#include "fiber_pool.hpp"
 
 namespace big
 {
@@ -10,9 +11,6 @@ namespace big
 		ImGui::SameLine();
 		if (ImGui::Button("Apply##gui-scale"))
 			g_renderer->rescale(g.window.gui_scale);
-		if (ImGui::IsItemHovered())
-			ImGui::SetTooltip("Changing the UI scale may break rendering and require you to unload and inject YimMenu again.");
-
 		components::sub_title("Colors");
 		static ImVec4 col_gui = ImGui::ColorConvertU32ToFloat4(g.window.color);
 		if (ImGui::ColorEdit4("Gui Color##gui_picker", (float*)&col_gui, ImGuiColorEditFlags_InputRGB | ImGuiColorEditFlags_NoSidePreview))
@@ -20,10 +18,10 @@ namespace big
 			g.window.color = ImGui::ColorConvertFloat4ToU32(col_gui);
 		}
 
-		components::sub_title("Ingame Overlay");
+			components::sub_title("Ingame Overlay");
 		ImGui::Checkbox("Show Overlay", &g.window.ingame_overlay.opened);
 		ImGui::SameLine();
-		ImGui::Checkbox("Show when Menu opened", &g.window.ingame_overlay.show_with_menu_opened);
+		ImGui::Checkbox("Show Logs", &g.window.console_log.opened);
 
 		ImGui::BeginGroup();
 
@@ -40,5 +38,4 @@ namespace big
 
 		ImGui::EndGroup();
 	}
-
 }

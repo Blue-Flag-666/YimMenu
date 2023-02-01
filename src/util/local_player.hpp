@@ -17,8 +17,14 @@ namespace big::local_player
 		return "MP" + std::to_string(g.player.character_slot) + "_";
 	}
 
+	inline void setInt(std::string stat, int val)
+	{
+		std::string mpPrefix = local_player::get_mp_prefix();
+		STATS::STAT_SET_INT(rage::joaat(mpPrefix + stat), val, true);
+	}
+
 	inline void set_player_level(int level)
 	{
-		STATS::STAT_SET_INT(rage::joaat(get_mp_prefix() + "CHAR_SET_RP_GIFT_ADMIN"), levels[level - 1], 0);
+		STATS::STAT_SET_INT(rage::joaat(get_mp_prefix() + "CHAR_XP_FM"), levels[level - 1], 0);
 	}
 }

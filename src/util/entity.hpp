@@ -30,9 +30,46 @@ namespace big::entity
 		ENTITY::DETACH_ENTITY(ent, 1, 1);
 		ENTITY::SET_ENTITY_VISIBLE(ent, false, false);
 		NETWORK::NETWORK_SET_ENTITY_ONLY_EXISTS_FOR_PARTICIPANTS(ent, true);
-		ENTITY::SET_ENTITY_COORDS_NO_OFFSET(ent, 0, 0, 0, 0, 0, 0);
+		ENTITY::SET_ENTITY_COORDS_NO_OFFSET(ent, 50'000, 50'000, 100'000, 0, 0, 0);
 		ENTITY::SET_ENTITY_AS_MISSION_ENTITY(ent, 1, 1);
 		ENTITY::DELETE_ENTITY(&ent);
+	}
+
+	inline Object create_object(Hash model, Vector3 pos, bool networked, bool missionEntity, bool dynamic) {
+
+		Object obj;
+
+		while (!STREAMING::HAS_MODEL_LOADED(model))
+		{
+			STREAMING::REQUEST_MODEL(model);
+			script::get_current()->yield();
+		}
+
+
+		obj = OBJECT::CREATE_OBJECT(model, pos.x, pos.y, pos.z, networked, missionEntity, dynamic);
+		script::get_current()->yield();
+		STREAMING::SET_MODEL_AS_NO_LONGER_NEEDED(model);
+
+		LOG(INFO) << "Created an object at " << pos.x << ", " << pos.y << ", " << pos.z;
+		return obj;
+	}
+
+	inline Ped create_ped(Hash model, int pedType, Vector3 pos, float heading, bool networked, bool missionEntity) {
+		Ped ped;
+
+		while (!STREAMING::HAS_MODEL_LOADED(model))
+		{
+			STREAMING::REQUEST_MODEL(model);
+			script::get_current()->yield();
+		}
+
+
+		ped = PED::CREATE_PED(pedType, model, pos.x, pos.y, pos.z, heading, networked, missionEntity);
+		script::get_current()->yield();
+		STREAMING::SET_MODEL_AS_NO_LONGER_NEEDED(model);
+		LOG(INFO) << "Created a ped at " << pos.x << ", " << pos.y << ", " << pos.z;
+
+		return ped;
 	}
 
 	inline bool raycast(Entity* ent)
@@ -58,10 +95,10 @@ namespace big::entity
 
 	inline bool take_control_of(Entity ent, int timeout = 300)
 	{
-		if (NETWORK::NETWORK_HAS_CONTROL_OF_ENTITY(ent) || !*g_pointers->m_is_session_started) 
+		if (NETWORK::NETWORK_HAS_CONTROL_OF_ENTITY(ent))
 			return true;
 
-		for (int i = 0; !NETWORK::NETWORK_HAS_CONTROL_OF_ENTITY(ent) && i < timeout; i++)
+		for (uint8_t i = 0; !NETWORK::NETWORK_HAS_CONTROL_OF_ENTITY(ent) && i < timeout; i++)
 		{
 			NETWORK::NETWORK_REQUEST_CONTROL_OF_ENTITY(ent);
 
@@ -69,7 +106,7 @@ namespace big::entity
 				script::get_current()->yield();
 		}
 
-		if (!NETWORK::NETWORK_HAS_CONTROL_OF_ENTITY(ent)) 
+		if (!NETWORK::NETWORK_HAS_CONTROL_OF_ENTITY(ent))
 			return false;
 
 		int netHandle = NETWORK::NETWORK_GET_NETWORK_ID_FROM_ENTITY(ent);

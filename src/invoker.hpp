@@ -25,13 +25,13 @@ namespace big
 		void end_call(rage::scrNativeHash hash);
 
 		template <typename T>
-		void push_arg(T &&value)
+		void push_arg(T&& value)
 		{
 			m_call_context.push_arg(std::forward<T>(value));
 		}
 
 		template <typename T>
-		T &get_return_value()
+		T& get_return_value()
 		{
 			return *m_call_context.get_return_value<T>();
 		}

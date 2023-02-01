@@ -120,297 +120,305 @@ namespace big
 
 		if (player)
 		{
+			if (frame->m_msg_id == player->get_net_game_player()->m_msg_id) {
+				if (!player->exposed_ip_spoofed && (player->get_net_data()->m_external_ip.m_field1 != frame->m_ip_field_4 || player->get_net_data()->m_external_ip.m_field2 != frame->m_ip_field_3 || player->get_net_data()->m_external_ip.m_field3 != frame->m_ip_field_2 || player->get_net_data()->m_external_ip.m_field4 != frame->m_ip_field_1) && !(frame->m_ip_field_4 == 255 && frame->m_ip_field_3 == 255 && frame->m_ip_field_2 == 255 && frame->m_ip_field_1 == 255))
+				{
+					g_notification_service->push_error("Protections", std::format("{} got detected with real ip {}.{}.{}.{} spoofed one is {}.{}.{}.{}", player->get_name(), frame->m_ip_field_4, frame->m_ip_field_3, frame->m_ip_field_2, frame->m_ip_field_1, player->get_net_data()->m_external_ip.m_field1, player->get_net_data()->m_external_ip.m_field2, player->get_net_data()->m_external_ip.m_field3, player->get_net_data()->m_external_ip.m_field4));
+					player->exposed_ip_spoofed = true;
+					session::add_infraction(player, Infraction::SPOOFED_IP);
+				}
+			}
 			switch (msgType)
 			{
-				case rage::eNetMessage::MsgTextMessage:
-				case rage::eNetMessage::MsgTextMessage2:
+			case rage::eNetMessage::MsgTextMessage:
+			case rage::eNetMessage::MsgTextMessage2:
+			{
+				char message[256];
+				buffer.ReadString(message, 256);
+
+				if (player->is_spammer)
+					return true;
+
+				if (spam::is_text_spam(message))
 				{
-					char message[256];
-					buffer.ReadString(message, 256);
-
-					if (player->is_spammer)
-						return true;
-
-					if (spam::is_text_spam(message))
+					if (g.session.log_chat_messages)
+						spam::log_chat(message, player, true);
+					player->is_spammer = true;
+					if (g.session.kick_chat_spammers)
 					{
-						if (g.session.log_chat_messages)
-							spam::log_chat(message, player, true);
-						player->is_spammer = true;
-						if (g.session.kick_chat_spammers)
-						{
-							((player_command*)command::get(RAGE_JOAAT("breakup")))->call(player, {});
-						}
-						return true;
+						((player_command*)command::get(RAGE_JOAAT("breakup")))->call(player, {});
 					}
-					else
-					{
-						if (g.session.log_chat_messages)
-							spam::log_chat(message, player, false);
-
-						if (g.session.chat_commands && message[0] == g.session.chat_command_prefix)
-							command::process(std::string(message + 1), std::make_shared<chat_command_context>(player));
-					}
-					break;
+					return true;
 				}
-				case rage::eNetMessage::MsgScriptMigrateHost:
+				else
 				{
-					if (player->m_host_migration_rate_limit.process())
-					{
-						if (player->m_host_migration_rate_limit.exceeded_last_process())
-						{
-							session::add_infraction(player, Infraction::TRIED_KICK_PLAYER);
-							g_notification_service->push_error("Protections", std::format("{} tried to OOM kick you!", player->get_name()));
-						}
-						return true;
-					}
-					break;
+					if (g.session.log_chat_messages)
+						spam::log_chat(message, player, false);
+
+					if (g.session.chat_commands && message[0] == g.session.chat_command_prefix)
+						command::process(std::string(message + 1), std::make_shared<chat_command_context>(player));
 				}
-				case rage::eNetMessage::MsgRemoveGamersFromSessionCmd:
+				break;
+			}
+			case rage::eNetMessage::MsgScriptMigrateHost:
+			{
+				if (player->m_host_migration_rate_limit.process())
 				{
-					player_ptr pl;
-					uint64_t session_id;
-					buffer.ReadQWord(&session_id, 64);
-					uint32_t count;
-					buffer.ReadDword(&count, 6);
-					for (std::uint32_t i = 0; i < count; i++)
-					{
-						uint64_t peer_id;
-						buffer.ReadQWord(&peer_id, 64);
-						for (std::uint32_t i = 0; i < gta_util::get_network()->m_game_session_ptr->m_peer_count; i++)
-						{
-							if (gta_util::get_network()->m_game_session_ptr->m_peers[i]->m_peer_data.m_peer_id_2 == peer_id)
-							{
-								pl = g_player_service->get_by_host_token(gta_util::get_network()->m_game_session_ptr->m_peers[i]->m_peer_data.m_host_token);
-								break;
-							}
-						}
-					}
-
-					if (player && pl && player->id() != pl->id() && count == 1 && frame->m_msg_id == -1)
-					{
-						if (g_player_service->get_self()->is_host())
-						{
-							g.reactions.breakup_others.process(player, pl);
-							session::add_infraction(player, Infraction::BREAKUP_KICK_DETECTED);
-
-							if (g.reactions.breakup_others.block)
-								return true;
-
-							if (g.reactions.breakup_others.karma)
-								((player_command*)command::get(RAGE_JOAAT("breakup")))->call(player, {});
-						}
-						else
-						{
-							g.reactions.breakup_others.process(player, pl);
-							session::add_infraction(player, Infraction::BREAKUP_KICK_DETECTED);
-
-							if (g.reactions.breakup_others.karma)
-								((player_command*)command::get(RAGE_JOAAT("breakup")))->call(player, {});
-						}
-					}
-
-					break;
-				}
-				case rage::eNetMessage::MsgLostConnectionToHost:
-				{
-					uint64_t session_id;
-					buffer.ReadQWord(&session_id, 64);
-					rage::rlGamerHandle handle;
-					gamer_handle_deserialize(handle, buffer);
-
-					auto self = g_player_service->get_self();
-					if (self->get_net_data() && self->get_net_data()->m_gamer_handle_2.m_rockstar_id == handle.m_rockstar_id)
+					if (player->m_host_migration_rate_limit.exceeded_last_process())
 					{
 						session::add_infraction(player, Infraction::TRIED_KICK_PLAYER);
-						g.reactions.lost_connection_kick.process(player);
-						return true;
+						g_notification_service->push_error("Protections", std::format("{} tried to OOM kick you!", player->get_name()));
 					}
-
-					for (auto& [_, plyr] : g_player_service->players())
+					return true;
+				}
+				break;
+			}
+			case rage::eNetMessage::MsgRemoveGamersFromSessionCmd:
+			{
+				player_ptr pl;
+				uint64_t session_id;
+				buffer.ReadQWord(&session_id, 64);
+				uint32_t count;
+				buffer.ReadDword(&count, 6);
+				for (std::uint32_t i = 0; i < count; i++)
+				{
+					uint64_t peer_id;
+					buffer.ReadQWord(&peer_id, 64);
+					for (std::uint32_t i = 0; i < gta_util::get_network()->m_game_session_ptr->m_peer_count; i++)
 					{
-						if (plyr->get_net_data() && plyr != player && plyr->get_net_data()->m_gamer_handle_2.m_rockstar_id == handle.m_rockstar_id)
+						if (gta_util::get_network()->m_game_session_ptr->m_peers[i]->m_peer_data.m_peer_id_2 == peer_id)
 						{
-							session::add_infraction(player, Infraction::LOST_CONNECTION_KICK_DETECTED);
-							g.reactions.lost_connection_kick_others.process(player, plyr);
-
-							if (g.reactions.lost_connection_kick_others.block)
-								return true;
-							else
-								break;
+							pl = g_player_service->get_by_host_token(gta_util::get_network()->m_game_session_ptr->m_peers[i]->m_peer_data.m_host_token);
+							break;
 						}
 					}
+				}
 
-					if (player->get_net_data() && player->get_net_data()->m_gamer_handle_2.m_rockstar_id == handle.m_rockstar_id)
-						break;
+				if (player && pl && player->id() != pl->id() && count == 1 && frame->m_msg_id == -1)
+				{
+					if (g_player_service->get_self()->is_host())
+					{
+						g.reactions.breakup_others.process(player, pl);
+						session::add_infraction(player, Infraction::BREAKUP_KICK_DETECTED);
+
+						if (g.reactions.breakup_others.block)
+							return true;
+
+						if (g.reactions.breakup_others.karma)
+							((player_command*)command::get(RAGE_JOAAT("breakup")))->call(player, {});
+					}
 					else
-						return true;
-				}
-				case rage::eNetMessage::MsgSessionEstablished:
-				{
-					rage::rlGamerHandle handle{ 0 };
-					if (player->get_net_data())
 					{
-						uint64_t session_id;
-						buffer.ReadQWord(&session_id, 64);
-						gamer_handle_deserialize(handle, buffer);
-						if (session_id == gta_util::get_network()->m_game_session_ptr->m_rline_session.m_session_id)
+						g.reactions.breakup_others.process(player, pl);
+						session::add_infraction(player, Infraction::BREAKUP_KICK_DETECTED);
+
+						if (g.reactions.breakup_others.karma)
+							((player_command*)command::get(RAGE_JOAAT("breakup")))->call(player, {});
+					}
+				}
+
+				break;
+			}
+			case rage::eNetMessage::MsgLostConnectionToHost:
+			{
+				uint64_t session_id;
+				buffer.ReadQWord(&session_id, 64);
+				rage::rlGamerHandle handle;
+				gamer_handle_deserialize(handle, buffer);
+
+				auto self = g_player_service->get_self();
+				if (self->get_net_data() && self->get_net_data()->m_gamer_handle_2.m_rockstar_id == handle.m_rockstar_id)
+				{
+					session::add_infraction(player, Infraction::TRIED_KICK_PLAYER);
+					g.reactions.lost_connection_kick.process(player);
+					return true;
+				}
+
+				for (auto& [_, plyr] : g_player_service->players())
+				{
+					if (plyr->get_net_data() && plyr != player && plyr->get_net_data()->m_gamer_handle_2.m_rockstar_id == handle.m_rockstar_id)
+					{
+						session::add_infraction(player, Infraction::LOST_CONNECTION_KICK_DETECTED);
+						g.reactions.lost_connection_kick_others.process(player, plyr);
+
+						if (g.reactions.lost_connection_kick_others.block)
+							return true;
+						else
+							break;
+					}
+				}
+
+				if (player->get_net_data() && player->get_net_data()->m_gamer_handle_2.m_rockstar_id == handle.m_rockstar_id)
+					break;
+				else
+					return true;
+			}
+			case rage::eNetMessage::MsgSessionEstablished:
+			{
+				rage::rlGamerHandle handle{ 0 };
+				if (player->get_net_data())
+				{
+					uint64_t session_id;
+					buffer.ReadQWord(&session_id, 64);
+					gamer_handle_deserialize(handle, buffer);
+					if (session_id == gta_util::get_network()->m_game_session_ptr->m_rline_session.m_session_id)
+					{
+						if (handle.m_rockstar_id != player->get_net_data()->m_gamer_handle_2.m_rockstar_id)
 						{
-							if (handle.m_rockstar_id != player->get_net_data()->m_gamer_handle_2.m_rockstar_id)
-							{
-								session::add_infraction(player, Infraction::SPOOFED_ROCKSTAR_ID); // TODO: store this RID
-							}
+							session::add_infraction(player, Infraction::SPOOFED_ROCKSTAR_ID); // TODO: store this RID
 						}
 					}
-					break;
 				}
-				case rage::eNetMessage::MsgNetComplaint:
+				break;
+			}
+			case rage::eNetMessage::MsgNetComplaint:
+			{
+				uint64_t host_token{};
+				buffer.ReadQWord(&host_token, 64);
+
+				std::vector<CNetGamePlayer*> players;
+
+				uint32_t num_of_tokens{};
+				buffer.ReadDword(&num_of_tokens, 32);
+
+				if (player && host_token != player->get_net_data()->m_host_token && !player->exposed_desync_protection)
 				{
-					uint64_t host_token{};
-					buffer.ReadQWord(&host_token, 64);
-
-					std::vector<CNetGamePlayer*> players;
-
-					uint32_t num_of_tokens{};
-					buffer.ReadDword(&num_of_tokens, 32);
-
-					if (player && host_token != player->get_net_data()->m_host_token && !player->exposed_desync_protection)
-					{
-						session::add_infraction(player, Infraction::DESYNC_PROTECTION);
-						player->exposed_desync_protection = true;
-					}
-
-					return true; // block desync kicks as host
+					session::add_infraction(player, Infraction::DESYNC_PROTECTION);
+					player->exposed_desync_protection = true;
 				}
-				case rage::eNetMessage::MsgRequestObjectIds:
+
+				return true; // block desync kicks as host
+			}
+			case rage::eNetMessage::MsgRequestObjectIds:
+			{
+				if (player->block_join)
 				{
-					if (player->block_join)
-					{
-						g_notification_service->push("Join Blocker", std::format("Trying to prevent {} from joining...", player->get_name()));
-						return true;
-					}
-					break;
+					g_notification_service->push("Join Blocker", std::format("Trying to prevent {} from joining...", player->get_name()));
+					return true;
 				}
-				case rage::eNetMessage::MsgScriptHostRequest:
-				{
-					CGameScriptId script;
-					script_id_deserialize(script, buffer);
+				break;
+			}
+			case rage::eNetMessage::MsgScriptHostRequest:
+			{
+				CGameScriptId script;
+				script_id_deserialize(script, buffer);
 
-					if (script.m_hash == RAGE_JOAAT("freemode") && g.session.force_script_host)
-						return true;
+				if (script.m_hash == RAGE_JOAAT("freemode") && g.session.force_script_host)
+					return true;
 
-					break;
-				}
-				case rage::eNetMessage::MsgNetTimeSync:
-				{
-					int action = buffer.Read<int>(2);
-					uint32_t counter = buffer.Read<uint32_t>(32);
-					uint32_t token = buffer.Read<uint32_t>(32);
-					uint32_t timestamp = buffer.Read<uint32_t>(32);
-					uint32_t time_diff = (*g_pointers->m_network_time)->m_time_offset + frame->m_timestamp;
+				break;
+			}
+			case rage::eNetMessage::MsgNetTimeSync:
+			{
+				int action = buffer.Read<int>(2);
+				uint32_t counter = buffer.Read<uint32_t>(32);
+				uint32_t token = buffer.Read<uint32_t>(32);
+				uint32_t timestamp = buffer.Read<uint32_t>(32);
+				uint32_t time_diff = (*g_pointers->m_network_time)->m_time_offset + frame->m_timestamp;
 
-					if (action == 0)
-					{
-						player->player_time_value = timestamp;
-						player->player_time_value_received_time = std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::system_clock::now());
-						if (!player->time_difference || time_diff > player->time_difference.value())
-							player->time_difference = time_diff;
-					}
-					break;
-				}
-				case rage::eNetMessage::MsgTransitionGamerInstruction:
+				if (action == 0)
 				{
-					if (is_kick_instruction(buffer))
-					{
-						g.reactions.gamer_instruction_kick.process(player);
-						return true;
-					}
-					break;
+					player->player_time_value = timestamp;
+					player->player_time_value_received_time = std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::system_clock::now());
+					if (!player->time_difference || time_diff > player->time_difference.value())
+						player->time_difference = time_diff;
 				}
+				break;
+			}
+			case rage::eNetMessage::MsgTransitionGamerInstruction:
+			{
+				if (is_kick_instruction(buffer))
+				{
+					g.reactions.gamer_instruction_kick.process(player);
+					return true;
+				}
+				break;
+			}
 			}
 		}
 		else
 		{
 			switch (msgType)
 			{
-				case rage::eNetMessage::MsgLostConnectionToHost:
+			case rage::eNetMessage::MsgLostConnectionToHost:
+			{
+				uint64_t session_id;
+				buffer.ReadQWord(&session_id, 64);
+				rage::rlGamerHandle handle;
+				gamer_handle_deserialize(handle, buffer);
+
+				auto self = g_player_service->get_self();
+				if (self->get_net_data() && self->get_net_data()->m_gamer_handle_2.m_rockstar_id == handle.m_rockstar_id)
 				{
-					uint64_t session_id;
-					buffer.ReadQWord(&session_id, 64);
-					rage::rlGamerHandle handle;
-					gamer_handle_deserialize(handle, buffer);
-
-					auto self = g_player_service->get_self();
-					if (self->get_net_data() && self->get_net_data()->m_gamer_handle_2.m_rockstar_id == handle.m_rockstar_id)
-					{
-						g_notification_service->push_error("Warning!", "Someone tried to lost connection kick you remotely!");
-						return true;
-					}
-
-					for (auto& [_, plyr] : g_player_service->players())
-					{
-						if (plyr->get_net_data() && plyr->get_net_data()->m_gamer_handle_2.m_rockstar_id == handle.m_rockstar_id)
-						{
-							g_notification_service->push_error("Warning!", std::format("Someone tried to lost connection kick {} remotely!", plyr->get_name()));
-							return true;
-						}
-					}
-
+					g_notification_service->push_error("Warning!", "Someone tried to lost connection kick you remotely!");
 					return true;
 				}
-				case rage::eNetMessage::MsgRemoveGamersFromSessionCmd:
+
+				for (auto& [_, plyr] : g_player_service->players())
 				{
-					if (!g_player_service->get_self()->is_host())
-						break;
-
-					player_ptr target;
-					uint64_t session_id;
-					buffer.ReadQWord(&session_id, 64);
-					uint32_t count;
-					buffer.ReadDword(&count, 6);
-					for (std::uint32_t i = 0; i < count; i++)
+					if (plyr->get_net_data() && plyr->get_net_data()->m_gamer_handle_2.m_rockstar_id == handle.m_rockstar_id)
 					{
-						uint64_t peer_id;
-						buffer.ReadQWord(&peer_id, 64);
+						g_notification_service->push_error("Warning!", std::format("Someone tried to lost connection kick {} remotely!", plyr->get_name()));
+						return true;
+					}
+				}
 
-						if (g_player_service->get_self()->get_net_data() && g_player_service->get_self()->get_net_data()->m_peer_id_2 == peer_id)
+				return true;
+			}
+			case rage::eNetMessage::MsgRemoveGamersFromSessionCmd:
+			{
+				if (!g_player_service->get_self()->is_host())
+					break;
+
+				player_ptr target;
+				uint64_t session_id;
+				buffer.ReadQWord(&session_id, 64);
+				uint32_t count;
+				buffer.ReadDword(&count, 6);
+				for (std::uint32_t i = 0; i < count; i++)
+				{
+					uint64_t peer_id;
+					buffer.ReadQWord(&peer_id, 64);
+
+					if (g_player_service->get_self()->get_net_data() && g_player_service->get_self()->get_net_data()->m_peer_id_2 == peer_id)
+					{
+						target = g_player_service->get_self();
+					}
+					else
+					{
+						for (std::uint32_t i = 0; i < gta_util::get_network()->m_game_session_ptr->m_peer_count; i++)
 						{
-							target = g_player_service->get_self();
-						}
-						else
-						{
-							for (std::uint32_t i = 0; i < gta_util::get_network()->m_game_session_ptr->m_peer_count; i++)
+							if (gta_util::get_network()->m_game_session_ptr->m_peers[i]->m_peer_data.m_peer_id_2 == peer_id)
 							{
-								if (gta_util::get_network()->m_game_session_ptr->m_peers[i]->m_peer_data.m_peer_id_2 == peer_id)
-								{
-									target = g_player_service->get_by_host_token(gta_util::get_network()->m_game_session_ptr->m_peers[i]->m_peer_data.m_host_token);
-									break;
-								}
+								target = g_player_service->get_by_host_token(gta_util::get_network()->m_game_session_ptr->m_peers[i]->m_peer_data.m_host_token);
+								break;
 							}
 						}
 					}
+				}
 
-					if (target && count == 1 && frame->m_msg_id == -1)
-					{
-						if (target->id() == g_player_service->get_self()->id())
-							g_notification_service->push_error("Warning!", "Someone tried to breakup kick you remotely!");
-						else
-							g_notification_service->push_error("Warning!", std::format("Someone tried to breakup kick {} remotely!", target->get_name()));
-					}
+				if (target && count == 1 && frame->m_msg_id == -1)
+				{
+					if (target->id() == g_player_service->get_self()->id())
+						g_notification_service->push_error("Warning!", "Someone tried to breakup kick you remotely!");
+					else
+						g_notification_service->push_error("Warning!", std::format("Someone tried to breakup kick {} remotely!", target->get_name()));
+				}
 
+				return true;
+			}
+			case rage::eNetMessage::MsgTransitionGamerInstruction:
+			{
+				if (is_kick_instruction(buffer))
+				{
+					g_notification_service->push_error("Warning!", "Someone tried to gamer instruction kick you remotely!");
 					return true;
 				}
-				case rage::eNetMessage::MsgTransitionGamerInstruction:
-				{
-					if (is_kick_instruction(buffer))
-					{
-						g_notification_service->push_error("Warning!", "Someone tried to gamer instruction kick you remotely!");
-						return true;
-					}
-					break;
-				}
+				break;
+			}
 			}
 		}
-		
+
 		if (g.debug.logs.packet_logs && msgType != rage::eNetMessage::MsgCloneSync && msgType != rage::eNetMessage::MsgPackedCloneSyncACKs && msgType != rage::eNetMessage::MsgPackedEvents
 			&& msgType != rage::eNetMessage::MsgPackedReliables && msgType != rage::eNetMessage::MsgPackedEventReliablesMsgs && msgType != rage::eNetMessage::MsgNetArrayMgrUpdate
 			&& msgType != rage::eNetMessage::MsgNetArrayMgrSplitUpdateAck && msgType != rage::eNetMessage::MsgNetArrayMgrUpdateAck && msgType != rage::eNetMessage::MsgScriptHandshakeAck

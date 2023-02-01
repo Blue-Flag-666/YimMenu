@@ -9,6 +9,10 @@ namespace big
 {
 	void view::spoofing()
 	{
+		g_fiber_pool->queue_job([] {
+			PAD::DISABLE_ALL_CONTROL_ACTIONS(0);
+			});
+
 		components::small_text("To spoof any of the below credentials you need to reconnect with the lobby.\nAll spoofed details will be only visible by other players, your game will still show your actual name, ip, rid...");
 
 		components::sub_title("Username");
@@ -25,7 +29,7 @@ namespace big
 		strcpy_s(name, sizeof(name), g.spoofing.username.c_str());
 
 		ImGui::Text("Username:");
-		components::input_text("##username_input", name, sizeof(name));
+		ImGui::InputText("##username_input", name, sizeof(name));
 
 		if (name != g.spoofing.username)
 			g.spoofing.username = std::string(name);
@@ -63,7 +67,7 @@ namespace big
 		strcpy_s(crew_tag, sizeof(crew_tag), g.spoofing.crew_tag.c_str());
 
 		ImGui::Text("Crew Tag:");
-		components::input_text("##crew_tag_input", crew_tag, sizeof(crew_tag));
+		ImGui::InputText("##crew_tag_input", crew_tag, sizeof(crew_tag));
 
 		if (crew_tag != g.spoofing.crew_tag)
 			g.spoofing.crew_tag = std::string(crew_tag);

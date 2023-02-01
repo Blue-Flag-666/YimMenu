@@ -7,6 +7,8 @@
 #include "core/data/speed_units.hpp"
 #include "services/gta_data/gta_data_service.hpp"
 #include "services/model_preview/model_preview_service.hpp"
+#include "util/xml_vehicle_loader.hpp"
+#include "util/xml_map_loader.hpp"
 
 #include <imgui_internal.h>
 
@@ -32,16 +34,16 @@ namespace big
 
 					std::map<int, bool> tmp_seats;
 
-					int num_of_seats = VEHICLE::GET_VEHICLE_MAX_NUMBER_OF_PASSENGERS(self::veh);
+				int num_of_seats = VEHICLE::GET_VEHICLE_MAX_NUMBER_OF_PASSENGERS(self::veh);
 
-					for (int i = -1; i < num_of_seats; i++)
-					{
-						tmp_seats[i] = VEHICLE::IS_VEHICLE_SEAT_FREE(self::veh, i, true);
-					}
+				for (int i = -1; i < num_of_seats; i++)
+				{
+					tmp_seats[i] = VEHICLE::IS_VEHICLE_SEAT_FREE(self::veh, i, true);
+				}
 
-					seats = tmp_seats;
-					ready = true;
-				});
+				seats = tmp_seats;
+				ready = true;
+					});
 			}
 
 			if (seats.size() == 0)
@@ -72,7 +74,7 @@ namespace big
 
 					components::button(name, [idx] {
 						PED::SET_PED_INTO_VEHICLE(self::ped, self::veh, idx);
-					});
+						});
 					if (!it.second)
 					{
 						ImGui::EndDisabled();
@@ -229,6 +231,55 @@ namespace big
 			)) {
 				g.vehicle.fly.speed = vehicle::speed_to_mps(fly_speed_user_unit, g.vehicle.speed_unit);
 			}
+
+			ImGui::Separator();
+
+			if (ImGui::TreeNode("XML Map Loader"))
+			{
+				if (ImGui::Button("Refresh")) xmlmaploader::load_all_xml_maps(); //, ImVec2(ImGui::GetWindowWidth(), ImGui::GetWindowHeight() * 0.5))) {
+				if (ImGui::ListBoxHeader("##Xmlmaps", { 500,static_cast<float>(*g_pointers->m_resolution_x * 0.2) }));
+				{
+					for (auto xmlmap : xmlmaploader::all_xml_maps) {
+
+						components::button(xmlmap.c_str(), [xmlmap] {
+							xmlmaploader::load_placements_from_xml_file(xmlmap);
+							});
+					}
+
+					if (xmlmaploader::all_xml_maps.size() < 1) ImGui::Text("No xml maps in your directory");
+
+					ImGui::ListBoxFooter();
+				}
+
+				ImGui::TreePop();
+			}
+
+			components::sub_title("Xml Vehicle");
+
+			//if (ImGui::TreeNode("Xml vehicles")) {
+
+			if (ImGui::Button("Refresh")) xmlvehicleloader::load_all_xml_vehicles(); //, ImVec2(ImGui::GetWindowWidth(), ImGui::GetWindowHeight() * 0.5))) {
+			if (ImGui::ListBoxHeader("##Xmlvehicles", { 500,static_cast<float>(*g_pointers->m_resolution_x * 0.2) }));
+			{
+
+				for (auto xmlveh : xmlvehicleloader::all_xml_vehicles) {
+
+					components::selectable(xmlveh.c_str(), false, [=] {
+
+						Vector3 pos = ENTITY::GET_ENTITY_COORDS(PLAYER::PLAYER_PED_ID(), 0);
+					Vehicle veh = xmlvehicleloader::load_xml_vehilce(xmlveh, pos, 0);
+
+					PED::SET_PED_INTO_VEHICLE(PLAYER::PLAYER_PED_ID(), veh, -1);
+						});
+
+				}
+
+				if (xmlvehicleloader::all_xml_vehicles.size() < 1) ImGui::Text("No xml vehicles in your directory");
+
+				ImGui::ListBoxFooter();
+			}
+
+			ImGui::TreePop();
 		}
 	}
 }

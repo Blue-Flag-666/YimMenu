@@ -10,6 +10,9 @@ namespace big
 		WEAPONS,
 		TELEPORT,
 		MOBILE,
+		ANIMATION,
+		HEIST_CONTROL,
+		PED_EDITOR,
 
 		VEHICLE,
 		HANDLING,
@@ -27,7 +30,6 @@ namespace big
 		SPAWN_PED,
 		TIME_AND_WEATHER,
 		CREATOR,
-		TRAIN,
 		WATER,
 
 		NETWORK,
@@ -67,6 +69,9 @@ namespace big
 				{ tabs::WEAPONS, { "Weapons", view::weapons }},
 				{ tabs::MOBILE, {"Mobile", view::mobile}},
 				{ tabs::TELEPORT, {"Teleport", view::teleport}},
+				{ tabs::ANIMATION, {"Animations", view::animation}},
+				{ tabs::HEIST_CONTROL, {"Heist Control", view::heist_control}},
+				{ tabs::PED_EDITOR, {"Outfit Editor", view::ped_editor}},
 			}}},
 			{tabs::VEHICLE, { "Vehicle", view::vehicle, {
 				{ tabs::HANDLING, {"Handling", view::handling_current_profile, {
@@ -82,14 +87,12 @@ namespace big
 			{ tabs::WORLD, { "World", nullptr, {
 				{ tabs::SPAWN_PED, { "Spawn Ped", view::spawn_ped }},
 				{ tabs::TIME_AND_WEATHER, { "Time And Weather", view::time_and_weather }},
-				{ tabs::CREATOR, { "Creator", view::creator }},
-				{ tabs::TRAIN, { "Train", view::train }},
-				{ tabs::WATER, { "Water", view::water }},
-		}}},
+				{ tabs::CREATOR, { "Creator", view::creator }}
+			}}},
 			{tabs::NETWORK, { "Network", nullptr, {
 				{ tabs::SPOOFING, { "Spoofing", view::spoofing }},
-				{ tabs::SESSION, { "Session", view::session }},
 				{ tabs::MISSIONS, { "Missions", view::missions }},
+				{ tabs::SESSION, { "Session", view::session }},
 				{ tabs::PLAYER_DATABASE, { "Player Database", view::player_database }},
 				{ tabs::SESSION_BROWSER, { "Session Browser", view::session_browser }},
 			}}},

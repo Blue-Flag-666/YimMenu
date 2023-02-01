@@ -26,24 +26,13 @@ namespace big
 			{
 				for (int i = 0; i < g_matchmaking_service->get_num_found_sessions(); i++)
 				{
-					auto& session = g_matchmaking_service->get_found_sessions()[i];
-
-					if (!session.is_valid)
+					if (!g_matchmaking_service->get_found_sessions()[i].is_valid)
 						continue;
 
-					if (components::selectable(std::to_string(session.info.m_session_token), i == selected_session_idx))
+					if (components::selectable(std::to_string(g_matchmaking_service->get_found_sessions()[i].info.m_session_token), i == selected_session_idx))
 					{
 						selected_session_idx = i;
-						g_pointers->m_encode_session_info(&session.info, session_info, 0x7D, nullptr);
-					}
-
-					if (ImGui::IsItemHovered())
-					{
-						ImGui::SetTooltip(std::format("Num Players: {}\nRegion: {}\nLanguage: {}\nHost: {}",
-							session.attributes.player_count,
-							regions[session.attributes.region].name,
-							languages[session.attributes.language].name,
-							session.info.m_net_player_data.m_gamer_handle.m_rockstar_id).c_str());
+						g_pointers->m_encode_session_info(&g_matchmaking_service->get_found_sessions()[i].info, session_info, 0x7D, nullptr);
 					}
 				}
 			}
@@ -71,27 +60,27 @@ namespace big
 				ImGui::Text("Host Rockstar ID: %d", data.m_gamer_handle.m_rockstar_id);
 
 				components::button("Copy Session Info", []
-				{
-					ImGui::SetClipboardText(session_info);
-				});
+					{
+						ImGui::SetClipboardText(session_info);
+					});
 				ImGui::SameLine();
 				components::button("Join", [session]
-				{
-					if (SCRIPT::GET_NUMBER_OF_THREADS_RUNNING_THE_SCRIPT_WITH_THIS_HASH(RAGE_JOAAT("maintransition")) != 0 ||
-						STREAMING::IS_PLAYER_SWITCH_IN_PROGRESS())
 					{
-						g_notification_service->push_error("Join Session", "Player switch in progress, wait a bit.");
-						return;
-					}
+						if (SCRIPT::GET_NUMBER_OF_THREADS_RUNNING_THE_SCRIPT_WITH_THIS_HASH(RAGE_JOAAT("maintransition")) != 0 ||
+						STREAMING::IS_PLAYER_SWITCH_IN_PROGRESS())
+						{
+							g_notification_service->push_error("Join Session", "Player switch in progress, wait a bit.");
+							return;
+						}
 
-					bool is_session_free_aim = session.attributes.discriminator & (1 << 17);
-					bool is_local_free_aim = PAD::GET_LOCAL_PLAYER_GAMEPAD_AIM_STATE() > 1;
+				bool is_session_free_aim = session.attributes.discriminator & (1 << 17);
+				bool is_local_free_aim = PAD::GET_LOCAL_PLAYER_GAMEPAD_AIM_STATE() > 1;
 
-					if (is_session_free_aim != is_local_free_aim)
-						PLAYER::SET_PLAYER_TARGETING_MODE(is_session_free_aim ? 3 : 1);
+				if (is_session_free_aim != is_local_free_aim)
+					PLAYER::SET_PLAYER_TARGETING_MODE(is_session_free_aim ? 3 : 1);
 
-					session::join_session(session.info);
-				});
+				session::join_session(session.info);
+					});
 			}
 			ImGui::EndChild();
 		}
@@ -99,9 +88,6 @@ namespace big
 		if (ImGui::TreeNode("Filters"))
 		{
 			ImGui::Checkbox("Region", &g.session_browser.region_filter_enabled);
-
-			if (ImGui::IsItemHovered())
-				ImGui::SetTooltip("It is highly recommended to keep this filter enabled");
 
 			if (g.session_browser.region_filter_enabled)
 			{
@@ -122,9 +108,6 @@ namespace big
 			}
 
 			ImGui::Checkbox("Language", &g.session_browser.language_filter_enabled);
-
-			if (ImGui::IsItemHovered())
-				ImGui::SetTooltip("Setting a correct region filter for the language will help tremendously");
 
 			if (g.session_browser.language_filter_enabled)
 			{
@@ -171,15 +154,12 @@ namespace big
 
 		if (ImGui::Checkbox("Replace Game Matchmaking", &g.session_browser.replace_game_matchmaking));
 
-		if (ImGui::IsItemHovered())
-			ImGui::SetTooltip("This will replace the default game matchmaking with a custom one that will use the filters and sorting set here");
-
 		components::button("Refresh", []
-		{
-			selected_session_idx = -1;
+			{
+				selected_session_idx = -1;
 
-			if (!g_matchmaking_service->matchmake())
-				g_notification_service->push_error("Matchmaking", "Matchmaking failed");
-		});
+		if (!g_matchmaking_service->matchmake())
+			g_notification_service->push_error("Matchmaking", "Matchmaking failed");
+			});
 	}
 }

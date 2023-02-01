@@ -43,8 +43,6 @@ namespace big
 		if (ImGui::IsItemHovered())
 			ImGui::SetTooltip("This will block anyone trying to join, kick or crash you with your Rockstar ID, including your friends");
 		ImGui::Checkbox("Lessen Breakup Kicks As Host", &g.protections.lessen_breakups);
-		if (ImGui::IsItemHovered())
-			ImGui::SetTooltip("Attacker must join after you have become host for this to work. There are anti-cheat concerns with this feature");
 		ImGui::EndGroup();
 	}
 

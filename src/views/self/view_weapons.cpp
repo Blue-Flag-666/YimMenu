@@ -15,8 +15,11 @@ namespace big
 
 		ImGui::BeginGroup();
 
-		components::command_checkbox<"infammo">();
-		components::command_checkbox<"infclip">();
+		ImGui::Checkbox("Infinite Ammo", &g.weapons.infinite_ammo);
+		ImGui::Checkbox("Infinite Clip", &g.weapons.infinite_mag);
+		ImGui::Checkbox("Light Gun", &g.weapons.paint_gun);
+		ImGui::Checkbox("Valkery Gun", &g.weapons.valkery_gun);
+		ImGui::Checkbox("Magnet gun", &g.self.magnet_gun);
 
 		ImGui::EndGroup();
 		ImGui::SameLine();
@@ -30,6 +33,10 @@ namespace big
 				g_pointers->m_bypass_max_count_of_active_sticky_bombs->restore();
 		}
 		components::command_checkbox<"rapidfire">();
+		ImGui::Checkbox("Money Gun", &g.self.money_gun);
+		ImGui::Checkbox("Collectable Gun", &g.weapons.collectable_gun);
+		ImGui::Checkbox("Fly Gun", &g.weapons.fly_gun);
+		ImGui::Checkbox("Rope Gun", &g.weapons.rope_gun);
 
 		ImGui::EndGroup();
 
@@ -80,11 +87,19 @@ namespace big
 
 		components::sub_title("Misc");
 
-		components::command_checkbox<"crosshairs">();
+		ImGui::Checkbox("Force Crosshairs", &g.weapons.force_crosshairs);
+
 		ImGui::SameLine();
-		components::command_checkbox<"norecoil">();
+
+		ImGui::Checkbox("No Recoil", &g.weapons.no_recoil);
+
 		ImGui::SameLine();
-		components::command_checkbox<"nospread">();
+
+		ImGui::Checkbox("No Spread", &g.weapons.no_spread);
+
+		ImGui::Checkbox("Aimbot", &g.self.aimbot);
+		if (g.self.aimbot)
+			ImGui::Checkbox("Exclude Friends", &g.self.aimbot_exclude_friend);
 
 		components::button("Get All Weapons", []
 		{
@@ -135,9 +150,6 @@ namespace big
 
 		switch (selected)
 		{
-		case CustomWeapon::GRAVITY_GUN:
-				ImGui::Checkbox("Launch on release", &g.weapons.gravity_gun.launch_on_release);
-				break;
 		case CustomWeapon::VEHICLE_GUN:
 			// this some ugly ass looking code
 			static char vehicle_gun[12];
@@ -149,9 +161,9 @@ namespace big
 			if (ImGui::IsItemActive())
 			{
 				g_fiber_pool->queue_job([]
-				{
-					PAD::DISABLE_ALL_CONTROL_ACTIONS(0);
-				});
+					{
+						PAD::DISABLE_ALL_CONTROL_ACTIONS(0);
+					});
 			}
 
 			break;

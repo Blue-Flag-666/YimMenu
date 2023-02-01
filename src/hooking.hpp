@@ -51,13 +51,13 @@ namespace big
 		static constexpr auto swapchain_num_funcs = 19;
 		static constexpr auto swapchain_present_index = 8;
 		static constexpr auto swapchain_resizebuffers_index = 13;
-		static HRESULT swapchain_present(IDXGISwapChain *this_, UINT sync_interval, UINT flags);
-		static HRESULT swapchain_resizebuffers(IDXGISwapChain *this_, UINT buffer_count, UINT width, UINT height, DXGI_FORMAT new_format, UINT swapchain_flags);
+		static HRESULT swapchain_present(IDXGISwapChain* this_, UINT sync_interval, UINT flags);
+		static HRESULT swapchain_resizebuffers(IDXGISwapChain* this_, UINT buffer_count, UINT width, UINT height, DXGI_FORMAT new_format, UINT swapchain_flags);
 
 		static LRESULT wndproc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 
 		static const char* get_label_text(void* unk, const char* label);
-		static int check_chat_profanity(__int64 chat_type, const char* input, const char** output);
+		static int multiplayer_chat_filter(__int64 chat_type, const char* input, const char** output);
 
 		static GtaThread* gta_thread_start(unsigned int** a1, unsigned int a2);
 		static rage::eThreadState gta_thread_kill(GtaThread* thread);
@@ -69,6 +69,9 @@ namespace big
 
 		static bool fragment_physics_crash(uintptr_t a1, uint32_t a2, uintptr_t a3, uintptr_t a4, uintptr_t a5);
 		static bool fragment_physics_crash_2(float* a1, float* a2);
+		static void send_clone_sync(CNetworkObjectMgr* mgr, CNetGamePlayer* src, rage::netObject* netObject, rage::datBitBuffer* buffer, uint16_t* object_id, bool a6);
+		static int64_t anti_anti_cheat();
+		static bool anti_anti_cheat_2(rage::datBitBuffer* buffer, int64_t a2);
 
 		static void received_event(
 			rage::netEventMgr* event_manager,
@@ -85,7 +88,7 @@ namespace big
 		static bool increment_stat_event(CNetworkIncrementStatEvent* net_event_struct, CNetGamePlayer* sender);
 		static bool scripted_game_event(CScriptedGameEvent* scripted_game_event, CNetGamePlayer* player);
 
-		static bool send_net_info_to_lobby(rage::rlGamerInfo *player, int64_t a2, int64_t a3, DWORD* a4);
+		static bool send_net_info_to_lobby(rage::rlGamerInfo* player, int64_t a2, int64_t a3, DWORD* a4);
 		static bool receive_net_message(void* netConnectionManager, void* a2, rage::netConnection::InFrame* frame);
 		static void get_network_event_data(int64_t unk, rage::CEventNetwork* net_event);
 

@@ -44,7 +44,7 @@ namespace big
 		[[nodiscard]] CPlayerInfo* get_player_info() const;
 		[[nodiscard]] class rage::snPlayer* get_session_player();
 		[[nodiscard]] class rage::snPeer* get_session_peer();
- 
+
 		[[nodiscard]] uint8_t id() const;
 
 		[[nodiscard]] bool is_friend() const;
@@ -71,8 +71,11 @@ namespace big
 		bool m_block_permanent_vehicles = false;
 
 		bool exposed_desync_protection = false;
+		bool exposed_ip_spoofed = false;
 		bool is_modder = false;
+
 		bool block_join = false;
+		uint64_t real_rid = 0;
 		int block_join_reason = 0;
 		bool is_spammer = false;
 
@@ -85,6 +88,5 @@ namespace big
 		bool equals(const CNetGamePlayer* net_game_player) const;
 
 		[[nodiscard]] std::string to_lowercase_identifier() const;
-
 	};
 }

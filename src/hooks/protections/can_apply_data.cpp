@@ -200,118 +200,125 @@ namespace big
 				}
 			}
 
+
+			if (g.debug.logs.block_and_log_syncs)
+			{
+				LOGF(WARNING, "Debugged Sync Crash: Type: %d, From: %s", node_hash, sender->get_name());
+				return true;
+			}
+
 			switch (node_hash)
 			{
-				case RAGE_JOAAT("CDoorCreationDataNode"):
+			case RAGE_JOAAT("CDoorCreationDataNode"):
+			{
+				const auto creation_node = (CDoorCreationDataNode*)(node);
+				if (is_crash_object(creation_node->m_model))
 				{
-					const auto creation_node = (CDoorCreationDataNode*)(node);
-					if (is_crash_object(creation_node->m_model))
-					{
-						notify::crash_blocked(sender, "invalid door model");
-						return true;
-					}
-					break;
+					notify::crash_blocked(sender, "invalid door model");
+					return true;
 				}
-				case RAGE_JOAAT("CPickupCreationDataNode"):
+				break;
+			}
+			case RAGE_JOAAT("CPickupCreationDataNode"):
+			{
+				const auto creation_node = (CPickupCreationDataNode*)(node);
+				if (is_crash_object(creation_node->m_custom_model))
 				{
-					const auto creation_node = (CPickupCreationDataNode*)(node);
-					if (is_crash_object(creation_node->m_custom_model))
-					{
-						notify::crash_blocked(sender, "invalid pickup model");
-						return true;
-					}
-					break;
+					notify::crash_blocked(sender, "invalid pickup model");
+					return true;
 				}
-				case RAGE_JOAAT("CPhysicalAttachDataNode"):
-				{
-					const auto attach_node = (CPhysicalAttachDataNode*)(node);
+				break;
+			}
+			case RAGE_JOAAT("CPhysicalAttachDataNode"):
+			{
+				const auto attach_node = (CPhysicalAttachDataNode*)(node);
 
-					// TODO: Find a better method to avoid false positives
-					auto model_hash = get_game_object(object) ? get_game_object(object)->m_model_info->m_hash : 0;
-					if (attach_node->m_attached && attach_node->m_attached_to == object->m_object_id && (model_hash != RAGE_JOAAT("hauler2") && model_hash != RAGE_JOAAT("phantom3")))
-					{
-						// notify::crash_blocked(sender, "infinite physical attachment");
-						return true;
-					}
-					else if (attach_node->m_attached && is_attachment_infinite((rage::CDynamicEntity*)get_game_object(object), attach_node->m_attached_to))
-					{
-						// notify::crash_blocked(sender, "recursive infinite physical attachment");
-						return true;
-					}
+				// TODO: Find a better method to avoid false positives
+				auto model_hash = get_game_object(object) ? get_game_object(object)->m_model_info->m_hash : 0;
+				if (attach_node->m_attached && attach_node->m_attached_to == object->m_object_id && (model_hash != RAGE_JOAAT("hauler2") && model_hash != RAGE_JOAAT("phantom3")))
+				{
+					// notify::crash_blocked(sender, "infinite physical attachment");
+					return true;
+				}
+				else if (attach_node->m_attached && is_attachment_infinite((rage::CDynamicEntity*)get_game_object(object), attach_node->m_attached_to))
+				{
+					 //notify::crash_blocked(sender, "recursive infinite physical attachment");
+					return true;
+				}
 
-					break;
-				}
-				case RAGE_JOAAT("CPedCreationDataNode"):
+				break;
+			}
+			case RAGE_JOAAT("CPedCreationDataNode"):
+			{
+				const auto creation_node = (CPedCreationDataNode*)(node);
+				if (is_crash_ped(creation_node->m_model))
 				{
-					const auto creation_node = (CPedCreationDataNode*)(node);
-					if (is_crash_ped(creation_node->m_model))
-					{
-						notify::crash_blocked(sender, "invalid ped model");
-						return true;
-					}
-					else if (creation_node->m_has_prop && is_crash_object(creation_node->m_prop_model))
-					{
-						notify::crash_blocked(sender, "invalid ped prop model");
-						return true;
-					}
-					break;
+					notify::crash_blocked(sender, "invalid ped model");
+					return true;
 				}
-				case RAGE_JOAAT("CPedAttachDataNode"):
+				else if (creation_node->m_has_prop && is_crash_object(creation_node->m_prop_model))
 				{
-					const auto attach_node = (CPedAttachDataNode*)(node);
-					if (attach_node->m_attached && attach_node->m_attached_to == object->m_object_id)
-					{
-						notify::crash_blocked(sender, "infinite ped attachment");
-						return true;
-					}
-					else if (attach_node->m_attached && is_attachment_infinite(get_game_object(object), attach_node->m_attached_to))
-					{
-						notify::crash_blocked(sender, "recursive infinite ped attachment");
-						return true;
-					}
+					notify::crash_blocked(sender, "invalid ped prop model");
+					return true;
+				}
+				break;
+			}
+			case RAGE_JOAAT("CPedAttachDataNode"):
+			{
+				const auto attach_node = (CPedAttachDataNode*)(node);
+				if (attach_node->m_attached && attach_node->m_attached_to == object->m_object_id)
+				{
+					//notify::crash_blocked(sender, "infinite ped attachment");
+					return true;
+				}
+				else if (attach_node->m_attached && is_attachment_infinite(get_game_object(object), attach_node->m_attached_to))
+				{
+					//notify::crash_blocked(sender, "recursive infinite ped attachment");
+					return true;
+				}
 
-					break;
-				}
-				case RAGE_JOAAT("CObjectCreationDataNode"):
+				break;
+			}
+			case RAGE_JOAAT("CObjectCreationDataNode"):
+			{
+				const auto creation_node = (CObjectCreationDataNode*)(node);
+				if (is_crash_object(creation_node->m_model))
 				{
-					const auto creation_node = (CObjectCreationDataNode*)(node);
-					if (is_crash_object(creation_node->m_model))
-					{
-						notify::crash_blocked(sender, "invalid object model");
-						return true;
-					}
-					break;
+					notify::crash_blocked(sender, "invalid object model");
+					return true;
 				}
-				case RAGE_JOAAT("CPlayerAppearanceDataNode"):
+				break;
+			}
+			case RAGE_JOAAT("CPlayerAppearanceDataNode"):
+			{
+				const auto player_appearance_node = (CPlayerAppearanceDataNode*)(node);
+				if (is_crash_ped(player_appearance_node->m_model_hash))
 				{
-					const auto player_appearance_node = (CPlayerAppearanceDataNode*)(node);
-					if (is_crash_ped(player_appearance_node->m_model_hash))
-					{
-						notify::crash_blocked(sender, "invalid player model (appearance node)");
-						return true;
-					}
-					break;
+					notify::crash_blocked(sender, "invalid player model (appearance node)");
+					return true;
 				}
-				case RAGE_JOAAT("CPlayerCreationDataNode"):
+				break;
+			}
+			case RAGE_JOAAT("CPlayerCreationDataNode"):
+			{
+				const auto player_creation_node = (CPlayerCreationDataNode*)(node);
+				if (is_crash_ped(player_creation_node->m_model))
 				{
-					const auto player_creation_node = (CPlayerCreationDataNode*)(node);
-					if (is_crash_ped(player_creation_node->m_model))
-					{
-						notify::crash_blocked(sender, "invalid player model (creation node)");
-						return true;
-					}
-					break;
+					notify::crash_blocked(sender, "invalid player model (creation node)");
+					return true;
 				}
-				case RAGE_JOAAT("CSectorDataNode"):
+				break;
+			}
+			case RAGE_JOAAT("CSectorDataNode"):
+			{
+				const auto sector_node = (CSectorDataNode*)(node);
+				if (sector_node->m_pos_x == 712 || sector_node->m_pos_y == 712 || sector_node->m_pos_z == 712)
 				{
-					const auto sector_node = (CSectorDataNode*)(node);
-					if (sector_node->m_pos_x == 712 || sector_node->m_pos_y == 712 || sector_node->m_pos_z == 712)
-					{
-						notify::crash_blocked(sender, "invalid sector position");
-						return true;
-					}
-					break;
+					notify::crash_blocked(sender, "invalid sector position");
+					return true;
 				}
+				break;
+			}
 			}
 		}
 		return false;

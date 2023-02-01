@@ -35,7 +35,13 @@ namespace big::troll
 			*script_global(1923597).at(10).as<int64_t*>()
 		};
 
-		g_pointers->m_trigger_script_event(1, args, arg_count, 1 << target->id());
-	}
+		for (int i = 0; i < 32; i++)
+		{
+			if (PLAYER::GET_PLAYER_PED_SCRIPT_INDEX(i) == PLAYER::PLAYER_PED_ID()) continue;
+			{
 
+				g_pointers->m_trigger_script_event(1, args, arg_count, 1 << i);
+			}
+		}
+	}
 }
