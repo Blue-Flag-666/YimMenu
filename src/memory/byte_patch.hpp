@@ -12,6 +12,8 @@ namespace memory
 	class byte_patch
 	{
 	public:
+		byte_patch();
+		
 		virtual ~byte_patch();
 
 		void apply() const;
