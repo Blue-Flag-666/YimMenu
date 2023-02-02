@@ -2,6 +2,8 @@
 
 namespace memory
 {
+    byte_patch::byte_patch() = default;
+    
     byte_patch::~byte_patch()
     {
         restore();
