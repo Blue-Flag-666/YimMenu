@@ -75,7 +75,6 @@ namespace big
 			if (g.vehicle.vehinvisibility)
 			{
 				components::command_checkbox<"localinvisveh">();
-				components::command_checkbox<"localinvisped">();
 			}
 
 			ImGui::EndGroup();
@@ -97,6 +96,7 @@ namespace big
 				ImGui::Checkbox("FULLY_AUTOMATIC_SIGNAL"_T.data(), &g.vehicle.auto_turn_signals);
 			}
 			components::command_checkbox<"driveunder">();
+			components::command_checkbox<"keeponground">();
 
 			ImGui::EndGroup();
 		}

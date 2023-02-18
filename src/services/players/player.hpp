@@ -44,6 +44,8 @@ namespace big
 		[[nodiscard]] CPlayerInfo* get_player_info() const;
 		[[nodiscard]] class rage::snPlayer* get_session_player();
 		[[nodiscard]] class rage::snPeer* get_session_peer();
+		[[nodiscard]] netAddress get_ip_address();
+		[[nodiscard]] uint16_t get_port();
  
 		[[nodiscard]] uint8_t id() const;
 
@@ -63,7 +65,7 @@ namespace big
 		bool ragdoll_loop = false;
 		bool rotate_cam_loop = false;
 
-		rate_limiter m_host_migration_rate_limit{ 1s, 20 };
+		rate_limiter m_host_migration_rate_limit{ 2s, 15 };
 		rate_limiter m_play_sound_rate_limit{ 1s, 10 };
 		rate_limiter m_invites_rate_limit{ 10s, 2 };
 		int m_num_spawned_permanent_vehicles = 0;

@@ -367,13 +367,18 @@ namespace big
 
 			return true;
 		}
-		case eRemoteEvent::BadThing1:
-		case eRemoteEvent::BadThing2:
-			return true;
-		case eRemoteEvent::StartScriptBegin:
+		case eRemoteEvent::StartScriptProceed:
 		{
-			g.reactions.start_script.process(plyr);
-			return true;
+			// TODO: Breaks stuff
+			if (auto script = gta_util::find_script_thread(RAGE_JOAAT("freemode")))
+			{
+				if (script->m_net_component && script->m_net_component->m_host && script->m_net_component->m_host->m_net_game_player != player)
+				{
+					g.reactions.start_script.process(plyr);
+					return true;
+				}
+			}
+			break;
 		}
 		}
 
@@ -398,7 +403,7 @@ namespace big
 			}
 			script_args += " };";
 
-			LOG(G3LOG_DEBUG) << "Script Event:\n"
+			LOG(VERBOSE) << "Script Event:\n"
 				<< "\tPlayer: " << player->get_name() << "\n"
 				<< "\tArgs: " << script_args;
 		}

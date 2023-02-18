@@ -123,8 +123,6 @@ namespace big
 		functions::read_bitbuffer_into_sync_tree m_read_bitbuffer_into_sync_tree{};
 		//Sync Signatures END
 
-		PVOID m_send_net_info_to_lobby{};
-
 		PVOID m_receive_net_message{};
 		PVOID m_get_network_event_data{};
 		PVOID m_assign_physical_index{};
@@ -135,8 +133,6 @@ namespace big
 		functions::start_matchmaking_find_sessions m_start_matchmaking_find_sessions;
 		functions::start_get_presence_attributes m_start_get_presence_attributes;
 		functions::join_session_by_info m_join_session_by_info;
-
-		memory::byte_patch* m_bypass_max_count_of_active_sticky_bombs;
 
 		functions::reset_network_complaints m_reset_network_complaints{};
 
@@ -193,6 +189,8 @@ namespace big
 
 		functions::send_network_damage m_send_network_damage;
 		functions::request_ragdoll m_request_ragdoll;
+		functions::request_control m_request_control;
+		functions::clear_ped_tasks_network m_clear_ped_tasks_network;
 
 		functions::get_connection_peer m_get_connection_peer{};
 		functions::send_remove_gamer_cmd m_send_remove_gamer_cmd{};
@@ -213,9 +211,6 @@ namespace big
 
 		PVOID m_create_script_handler;
 
-		PVOID m_write_bitbuffer_gamer_handle;
-		PVOID m_read_bitbuffer_gamer_handle;
-
 		functions::encode_session_info m_encode_session_info;
 		functions::decode_session_info m_decode_session_info;
 		functions::decode_peer_info m_decode_peer_info;
@@ -228,15 +223,11 @@ namespace big
 		rage::netTime** m_network_time;
 		functions::sync_network_time m_sync_network_time;
 
-		rage::rlGamerInfo* m_chat_gamer_info;
-
 		functions::send_packet m_send_packet;
 		functions::connect_to_peer m_connect_to_peer;
     
 		PVOID m_fragment_physics_crash;
 		PVOID m_fragment_physics_crash_2;
-
-		functions::clear_ped_tasks_network m_clear_ped_tasks_network;
 
 		PVOID m_infinite_train_crash;
 		functions::get_next_carriage m_get_next_carriage;
@@ -244,6 +235,10 @@ namespace big
 		functions::get_entity_attached_to m_get_entity_attached_to;
 
 		PVOID m_received_array_update;
+
+		PVOID m_receive_pickup{};
+
+		PVOID m_write_player_camera_data_node{};
 	};
 
 	inline pointers* g_pointers{};

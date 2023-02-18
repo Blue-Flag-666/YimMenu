@@ -72,7 +72,10 @@ namespace big
 		if (frame->get_event_type() != rage::netConnection::InFrame::EventType::FrameReceived)
 			return g_hooking->get_original<hooks::receive_net_message>()(netConnectionManager, a2, frame);
 
-		rage::datBitBuffer buffer((uint8_t*)frame->m_data, frame->m_length);
+		if (frame->m_data == nullptr || frame->m_length == 0)
+			return g_hooking->get_original<hooks::receive_net_message>()(netConnectionManager, a2, frame);
+
+		rage::datBitBuffer buffer(frame->m_data, frame->m_length);
 		buffer.m_flagBits = 1;
 
 		rage::eNetMessage msgType;
@@ -89,36 +92,6 @@ namespace big
 
 		if (!get_msg_type(msgType, buffer))
 			return g_hooking->get_original<hooks::receive_net_message>()(netConnectionManager, a2, frame);
-
-		if ((msgType == rage::eNetMessage::MsgTransitionLaunchNotify && frame->m_connection_identifier != gta_util::get_network()->m_game_session.m_connection_identifier) ||
-			(msgType == rage::eNetMessage::MsgTransitionLaunch && frame->m_connection_identifier != gta_util::get_network()->m_transition_session.m_connection_identifier))
-		{
-			if (player)
-			{
-				g_notification_service->push_error("PROTECTIONS"_T.data(),
-					std::vformat("REMOTE_CRASH_INVALID_TRANSITION_FROM"_T, std::make_format_args(player->get_name())));
-			}
-			else
-			{
-				g_notification_service->push_error("PROTECTIONS"_T.data(), "REMOTE_CRASH_INVALID_TRANSITION"_T.data());
-			}
-
-			return true;
-		}
-
-		if (msgType == rage::eNetMessage::MsgBlacklist && frame->m_connection_identifier != gta_util::get_network()->m_game_session.m_connection_identifier)
-		{
-			if (player)
-			{
-				g_notification_service->push_error("PROTECTIONS"_T.data(),
-					std::vformat("REMOTE_CRASH_INVALID_BLACKLIST_FROM"_T, std::make_format_args(player->get_name())));
-			}
-			else
-			{
-				g_notification_service->push_error("PROTECTIONS"_T.data(), "REMOTE_CRASH_INVALID_BLACKLIST"_T.data());
-			}
-			return true;
-		}
 
 		if (player)
 		{
@@ -222,7 +195,7 @@ namespace big
 					gamer_handle_deserialize(handle, buffer);
 
 					auto self = g_player_service->get_self();
-					if (self->get_net_data() && self->get_net_data()->m_gamer_handle_2.m_rockstar_id == handle.m_rockstar_id)
+					if (self->get_net_data() && self->get_net_data()->m_gamer_handle.m_rockstar_id == handle.m_rockstar_id)
 					{
 						session::add_infraction(player, Infraction::TRIED_KICK_PLAYER);
 						g.reactions.lost_connection_kick.process(player);
@@ -231,7 +204,7 @@ namespace big
 
 					for (auto& [_, plyr] : g_player_service->players())
 					{
-						if (plyr->get_net_data() && plyr != player && plyr->get_net_data()->m_gamer_handle_2.m_rockstar_id == handle.m_rockstar_id)
+						if (plyr->get_net_data() && plyr != player && plyr->get_net_data()->m_gamer_handle.m_rockstar_id == handle.m_rockstar_id)
 						{
 							session::add_infraction(player, Infraction::LOST_CONNECTION_KICK_DETECTED);
 							g.reactions.lost_connection_kick_others.process(player, plyr);
@@ -243,28 +216,10 @@ namespace big
 						}
 					}
 
-					if (player->get_net_data() && player->get_net_data()->m_gamer_handle_2.m_rockstar_id == handle.m_rockstar_id)
+					if (player->get_net_data() && player->get_net_data()->m_gamer_handle.m_rockstar_id == handle.m_rockstar_id)
 						break;
 					else
 						return true;
-				}
-				case rage::eNetMessage::MsgSessionEstablished:
-				{
-					rage::rlGamerHandle handle{ 0 };
-					if (player->get_net_data())
-					{
-						uint64_t session_id;
-						buffer.ReadQWord(&session_id, 64);
-						gamer_handle_deserialize(handle, buffer);
-						if (session_id == gta_util::get_network()->m_game_session_ptr->m_rline_session.m_session_id)
-						{
-							if (handle.m_rockstar_id != player->get_net_data()->m_gamer_handle_2.m_rockstar_id)
-							{
-								session::add_infraction(player, Infraction::SPOOFED_ROCKSTAR_ID); // TODO: store this RID
-							}
-						}
-					}
-					break;
 				}
 				case rage::eNetMessage::MsgNetComplaint:
 				{
@@ -344,7 +299,7 @@ namespace big
 					gamer_handle_deserialize(handle, buffer);
 
 					auto self = g_player_service->get_self();
-					if (self->get_net_data() && self->get_net_data()->m_gamer_handle_2.m_rockstar_id == handle.m_rockstar_id)
+					if (self->get_net_data() && self->get_net_data()->m_gamer_handle.m_rockstar_id == handle.m_rockstar_id)
 					{
 						g_notification_service->push_error("KICK"_T.data(), "REMOTE_KICK_LOST_CONNECTION"_T.data());
 						return true;
@@ -352,7 +307,7 @@ namespace big
 
 					for (auto& [_, plyr] : g_player_service->players())
 					{
-						if (plyr->get_net_data() && plyr->get_net_data()->m_gamer_handle_2.m_rockstar_id == handle.m_rockstar_id)
+						if (plyr->get_net_data() && plyr->get_net_data()->m_gamer_handle.m_rockstar_id == handle.m_rockstar_id)
 						{
 							g_notification_service->push_error("KICK"_T.data(),
 								std::vformat("REMOTE_KICK_LOST_CONNECTION_PLAYER"_T, std::make_format_args(plyr->get_name())));
@@ -433,7 +388,7 @@ namespace big
 				}
 			}
 
-			LOG(G3LOG_DEBUG) << "RECEIVED PACKET | Type: " << packet_type << " | Length: " << frame->m_length << " | Sender: " <<
+			LOG(VERBOSE) << "RECEIVED PACKET | Type: " << packet_type << " | Length: " << frame->m_length << " | Sender: " <<
 				(player ? player->get_name() : std::format("<M:{}>, <C:{:X}>, <P:{}>", (int)frame->m_msg_id, frame->m_connection_identifier, frame->m_peer_id).c_str()) << " | " << HEX_TO_UPPER((int)msgType);
 		}
 
