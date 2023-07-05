@@ -15,7 +15,12 @@ namespace big
 		ImGui::SetNextWindowPos(ImVec2(10.0f, 10.0f), ImGuiCond_FirstUseEver, ImVec2(0.0f, 0.0f));
 		ImGui::SetNextWindowBgAlpha(0.5f);
 
-		if (ImGui::Begin("overlay", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav))
+		auto window_flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
+		if (!g_gui->is_open())
+		{
+			window_flags |= ImGuiWindowFlags_NoMouseInputs;
+		}
+		if (ImGui::Begin("overlay", nullptr, window_flags))
 		{
 			ImGui::Text("YimMenu");
 
@@ -58,6 +63,9 @@ namespace big
 
 				if (g.window.ingame_overlay_indicators.show_triggerbot)
 					components::overlay_indicator("Triggerbot", g.weapons.triggerbot);
+
+				if (g.window.ingame_overlay_indicators.show_invisibility)
+					components::overlay_indicator("Invisibility", g.self.invisibility);
 			}
 
 			if (g.window.ingame_overlay.show_position && g_local_player)
